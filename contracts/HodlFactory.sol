@@ -21,6 +21,7 @@ interface ICErc20 {
     function balanceOfUnderlying(address owner) external returns (uint);
     function getCash() external view returns (uint);
     function supplyRatePerBlock() external view returns (uint);
+    function balanceOf(address _ownesr) external view returns (uint256);
 }
 
 contract HodlFactory is ERC721Full {
@@ -34,65 +35,53 @@ contract HodlFactory is ERC721Full {
     ICErc20 cToken = ICErc20(0x6D7F0754FFeb405d23C51CE938289d4835bE3b14); 
     Cash underlying = Cash(0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa);
 
-    uint256 public hodlCount = 0;
-    uint256 public numberOfActiveHodls = 0;
-    uint256 public sumOfPurchaseTimes = 0;
-    uint256 public testVariableA;
-    uint256 public testVariableB;
-    uint256 public testVariableC;
-    uint256 public testVariableD;
+    uint256 public classicHodlCount = 0;
     uint256 constant public oneHundredDai = 100000000000000000000;
 
      struct hodl {
         address owner;
         uint256 purchaseTime;
+        uint256 cTokenBalance;
     }
 
     mapping (uint256 => hodl) public hodlTracker; 
-   
-    // constructor(address _addressOfCashContract) public {
-    //     cash = Cash(_addressOfCashContract);
-    // }
 
-    function buyHodl() external {
-        // SEND 100 DAI TO COMPOUND
-        underlying.allocateTo(address(this), oneHundredDai); // just send dai to the contract so dont need to worry about approve shit
-        underlying.approve(address(cToken), oneHundredDai);
-        assert(cToken.mint(oneHundredDai) == 0); 
-        // GENERATE NFT
-        _mint(msg.sender, hodlCount);
-        hodlTracker[hodlCount].owner = msg.sender;
-        hodlTracker[hodlCount].purchaseTime = now;
-        sumOfPurchaseTimes = sumOfPurchaseTimes.add(now);
-        hodlCount = hodlCount.add(1);
-        numberOfActiveHodls = numberOfActiveHodls.add(1);
-    } 
-
-    // assumes that tokenID = its position, i.e. does not consider possibility of people burning NFTs
-    function getPonziWeighting(uint _hodlId, uint _numberOfActiveHodls) public returns (uint256) {
-        uint256 _hodlIdBig = _hodlId.mul(100);
-        uint256 _numberOfActiveHodlsBig = _numberOfActiveHodls.mul(100);
-        testVariableA = _hodlIdBig;
-        testVariableB = _numberOfActiveHodlsBig;
-        uint256 _numerator = _numberOfActiveHodlsBig.add((_numberOfActiveHodlsBig.sub(100)).div(2)).sub(_hodlIdBig.sub(100));
-        testVariableC = _numerator;
-        uint256 _denominator = _numberOfActiveHodlsBig.mul(_numberOfActiveHodlsBig);
-        testVariableD = _denominator;
-        return _numerator.div(_denominator);
+    function getClassicHodlOwner(uint256 _hodlId) external view returns (address) {
+        return hodlTracker[_hodlId].owner;
     }
 
-    // function interestOwed(uint256 _hodlId) public view {
-    //     uint256 _totalDaiPaid = oneHundredDai.mul(numberOfActiveHodls);
-    //     uint256 _totalDaiNow = cToken.balanceOfUnderlying(address(this));
-    //     uint256 _totalInterest = _totalDaiNow.sub(_totalDaiPaid);
-    //     // uint exchangeRateMantissa = cToken.exchangeRateCurrent();
-    //     uint256 cDaiToDaiRate =  1;
-    //     uint256 _myTimeHeld = now.sub(hodlTracker[_hodlId].purchaseTime);
-    //     uint256 _totalTimeHeld = (now.sub(sumOfPurchaseTimes)).mul(numberOfActiveHodls);
-    //     uint256 _myInterestShareBeforePonzid = (_totalInterest.mul(_myTimeHeld)).div(_totalTimeHeld);
+    function getClassicHodlPurchaseTime(uint256 _hodlId) external returns (uint256) {
+        return hodlTracker[_hodlId].purchaseTime;
+    }
 
+    function getClassicHodlTokenBalance(uint256 _hodlId) external returns (uint256) {
+        return hodlTracker[_hodlId].cTokenBalance;
+    }
+
+    function buyClassicHodl() external {
+        // UPDATE VARIABLES
+        hodlTracker[classicHodlCount].owner = msg.sender;
+        hodlTracker[classicHodlCount].purchaseTime = now;
+         // SWAP DAI FOR cDAI
+        underlying.allocateTo(address(this), oneHundredDai); // just send dai to the contract so dont need to worry about approve shit
+        underlying.approve(address(cToken), oneHundredDai);
+        uint256 _cTokenBalanceBefore = cToken.balanceOf(address(this));
+        assert(cToken.mint(oneHundredDai) == 0); 
+        uint256 _cTokenBalanceAfter = cToken.balanceOf(address(this));
+        hodlTracker[classicHodlCount].cTokenBalance = _cTokenBalanceAfter - _cTokenBalanceBefore;
+        // GENERATE NFT
+        _mint(msg.sender, classicHodlCount);
+        classicHodlCount = classicHodlCount.add(1);
+    } 
+
+    // function withdrawInterestfromClassicHodl(uint256 _hodlId) external {
+    //     require(msg.sender = ownerOf(_hodlId), "Not owner");
+    //     uint256 _daiAvailable = cToken.balanceOfUnderlying(_hodlId)
 
     // }
+
+
+  
 
 
 
