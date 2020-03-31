@@ -610,9 +610,52 @@
     "name": "solc",
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "4": {
+      "events": {
+        "0x60cdc157ca4737a5d39a0e107532616e7bf6946e615228812c7f9bc9f81797a6": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "_message",
+              "type": "string"
+            }
+          ],
+          "name": "StorageSet",
+          "type": "event",
+          "signature": "0x60cdc157ca4737a5d39a0e107532616e7bf6946e615228812c7f9bc9f81797a6"
+        }
+      },
+      "links": {},
+      "address": "0x0a17F82532Bd3599d690f331A79aBb3E43b68C97",
+      "transactionHash": "0x07a5443b6a8bbf9ab59e6d4d361e9795e94028dfe70627152b32c6dc4f103ca1"
+    },
+    "1585659141626": {
+      "events": {
+        "0x60cdc157ca4737a5d39a0e107532616e7bf6946e615228812c7f9bc9f81797a6": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "_message",
+              "type": "string"
+            }
+          ],
+          "name": "StorageSet",
+          "type": "event",
+          "signature": "0x60cdc157ca4737a5d39a0e107532616e7bf6946e615228812c7f9bc9f81797a6"
+        }
+      },
+      "links": {},
+      "address": "0x172f72274838Bc3ad6a6F62f415a662665710ED8",
+      "transactionHash": "0xfc83666994b1aec0af665576df651dbc5467156b869c3dff9e0f94edefeb2bf4"
+    }
+  },
   "schemaVersion": "3.0.19",
-  "updatedAt": "2020-03-31T12:44:43.471Z",
+  "updatedAt": "2020-03-31T14:43:02.050Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

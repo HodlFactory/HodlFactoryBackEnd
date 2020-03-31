@@ -28,12 +28,13 @@ contract ClassicHodlFactory is ERC721Full {
 
     using SafeMath for uint;
 
-    constructor() ERC721Full("HodlFactory", "HODL") public { }
+    ICErc20 cToken;
+    Cash underlying;
 
-    // Cash public cash; 
-    // rinkeby stuff
-    ICErc20 cToken = ICErc20(0x6D7F0754FFeb405d23C51CE938289d4835bE3b14); 
-    Cash underlying = Cash(0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa);
+    constructor(address _cashAddress, address _cTokenAddress) ERC721Full("HodlFactory", "HODL") public { 
+        cToken = ICErc20(_cTokenAddress); 
+        underlying = Cash(_cashAddress);
+    }
 
     uint public hodlCount = 0;
     uint constant public oneHundredDai = 100000000000000000000;
