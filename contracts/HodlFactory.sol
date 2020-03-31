@@ -63,51 +63,46 @@ contract ClassicHodlFactory is ERC721Full {
         return hodlTracker[_hodlId].cTokenBalance;
     }
 
+    // x 1000 to increase FX rate resolution
     function getFxRateTimesOneThousand() public returns (uint) {
-        uint _totalCDaiBalance = cToken.balanceOf(address(this)).mul(10000000000); // muliplited by more than 1000 cos cDai has fewer decimal points than Dai;
-        uint _totalCDaiBalanceTimesOneThousand = _totalCDaiBalance.mul(1000);
+        uint _totalCDaiBalance = cToken.balanceOf(address(this)).mul(10000000000); // scales it up to atto cDai
+        uint _totalCDaiBalanceTimesOneThousand = _totalCDaiBalance.mul(1000); 
         uint _totalDaiBalance = cToken.balanceOfUnderlying(address(this));
-        testingVariableC = _totalCDaiBalanceTimesOneThousand.div(_totalDaiBalance);
-        // emit stfu(_totalCDaiBalanceTimesOneThousand);
-        // emit stfu(_totalDaiBalance);
-        emit stfu(testingVariableC);
         return _totalCDaiBalanceTimesOneThousand.div(_totalDaiBalance);
     }
 
     function interestAvailableToWithdraw(uint _hodlId) public returns (uint) {
         uint _cTokenBalanceTimesOneThousand = hodlTracker[_hodlId].cTokenBalance.mul(1000);
-        uint _daiBalanceUnscaled = _cTokenBalanceTimesOneThousand.div(getFxRateTimesOneThousand());
-        uint _daiBalanceScaled = _daiBalanceUnscaled.mul(10000000000);
-        emit stfu(_daiBalanceScaled);
-        return (_daiBalanceScaled);
+        uint _daiBalance = _cTokenBalanceTimesOneThousand.div(getFxRateTimesOneThousand());
+        return (_daiBalance - oneHundredDai);
     }
 
-    function buyHodl() external {
+    function buyHodl() public {
         // UPDATE VARIABLES
         hodlTracker[hodlCount].owner = msg.sender;
         hodlTracker[hodlCount].purchaseTime = now;
          // SWAP DAI FOR cDAI
         underlying.allocateTo(address(this), oneHundredDai); // just send dai to the contract so dont need to worry about approve shit
         underlying.approve(address(cToken), oneHundredDai);
-        uint _cTokenBalanceBefore = cToken.balanceOf(address(this));
+        uint _cTokenBalanceBefore = cToken.balanceOf(address(this)).mul(10000000000); // scales it up to atto cDai
         assert(cToken.mint(oneHundredDai) == 0); 
-        uint _cTokenBalanceAfter = cToken.balanceOf(address(this));
+        uint _cTokenBalanceAfter = cToken.balanceOf(address(this)).mul(10000000000); // scales it up to atto cDai
         hodlTracker[hodlCount].cTokenBalance = _cTokenBalanceAfter - _cTokenBalanceBefore;
         // GENERATE NFT
         _mint(msg.sender, hodlCount);
         hodlCount = hodlCount.add(1);
     } 
 
-    // function withdrawInterestfromClassicHodl(uint _hodlId) external {
-    //     require(msg.sender = ownerOf(_hodlId), "Not owner");
-    //     uint _daiAvailable = cToken.balanceOfUnderlying(_hodlId)
-
-    // }
-
-
-  
-
-
-
+    function withdrawInterest(uint _hodlId) external {
+        require(msg.sender == ownerOf(_hodlId), "Not owner");
+        uint _interestAvailableToWithdraw = interestAvailableToWithdraw(_hodlId);
+        require(_interestAvailableToWithdraw > 0, "No interest to withdraw");
+        uint _denominator = (oneHundredDai.add(_interestAvailableToWithdraw)).div(_interestAvailableToWithdraw);
+        uint _cTokensToWithdraw = hodlTracker[_hodlId].cTokenBalance.div(_denominator);
+        uint _daiToReturn = cToken.redeemUnderlying(_cTokensToWithdraw.div(10000000000));
+        underlying.transfer(msg.sender ,_daiToReturn);
+        // testingVariableA = _cTokensToWithdraw;
+        // emit stfu(testingVariableA);
+    }
 
 }
