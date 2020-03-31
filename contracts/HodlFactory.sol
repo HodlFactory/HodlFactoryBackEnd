@@ -31,9 +31,12 @@ contract ClassicHodlFactory is ERC721Full {
     ICErc20 cToken;
     Cash underlying;
 
+    address public cashAddress;
+
     constructor(address _cashAddress, address _cTokenAddress) ERC721Full("HodlFactory", "HODL") public { 
         cToken = ICErc20(_cTokenAddress); 
         underlying = Cash(_cashAddress);
+        cashAddress = _cashAddress;
     }
 
     uint public hodlCount = 0;
@@ -89,7 +92,7 @@ contract ClassicHodlFactory is ERC721Full {
         assert(cToken.mint(oneHundredDai) == 0); 
         uint _cTokenBalanceAfter = cToken.balanceOf(address(this)).mul(10000000000); // scales it up to atto cDai
         hodlTracker[hodlCount].cTokenBalance = _cTokenBalanceAfter - _cTokenBalanceBefore;
-        // GENERATE NFT
+        // // GENERATE NFT
         _mint(msg.sender, hodlCount);
         hodlCount = hodlCount.add(1);
     } 

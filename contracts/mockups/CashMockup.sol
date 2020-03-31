@@ -24,9 +24,9 @@ contract CashMockup
         return balances[_owner];
     }
 
-    function allocateTo(uint _amount) external
+    function allocateTo(address _recipient, uint _amount) external
     {
-        balances[msg.sender] = balances[msg.sender].add(_amount);
+        balances[_recipient] = balances[_recipient].add(_amount);
     }
 
     function transfer(address _to, uint _amount) external returns (bool)
