@@ -1,11 +1,11 @@
 const SimpleStorage = artifacts.require("SimpleStorage");
 const TutorialToken = artifacts.require("TutorialToken");
 const ComplexStorage = artifacts.require("ComplexStorage");
-const HodlFactory = artifacts.require("HodlFactory");
+const ClassicHodlFactory = artifacts.require("ClassicHodlFactory");
 
 module.exports = function(deployer) {
   // deployer.deploy(SimpleStorage);
   // deployer.deploy(TutorialToken);
   // deployer.deploy(ComplexStorage);
-  deployer.deploy(HodlFactory);
+  deployer.deploy(ClassicHodlFactory);
 };
