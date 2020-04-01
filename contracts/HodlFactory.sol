@@ -68,6 +68,7 @@ contract ClassicHodlFactory is ERC721Full {
     }
 
     // x 1000 to increase FX rate resolution
+    // x 1000 to increase FX rate resolution
     function getFxRateTimesOneThousand() public returns (uint) {
         uint _totalCDaiBalance = cToken.balanceOf(address(this)).mul(10000000000); // scales it up to atto cDai
         uint _totalCDaiBalanceTimesOneThousand = _totalCDaiBalance.mul(1000); 

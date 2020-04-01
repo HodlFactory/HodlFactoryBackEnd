@@ -31,4 +31,18 @@ contract('HodlFactoryTests', (accounts) => {
     assert.equal(owner, user);
   });
 
+  it('check getFxRateTimesOneThousand', async () => {
+    await hodlFactory.buyHodl();
+    var getFxRate = await hodlFactory.getFxRateTimesOneThousand.call();
+    assert.equal(getFxRate, 50000);
+    await cToken.generate10PercentInterest(hodlFactory.address);
+    var getFxRate = await hodlFactory.getFxRateTimesOneThousand.call();
+    assert.equal(getFxRate, 45454); //= 5000 / 110 * 1000 rounded down
+  });
+
+  // it('check interestAvailableToWithdraw', async () => {
+  //   await hodlFactory.buyHodl();
+  //   var interestAvailable = await hodlFactory.interestAvailableToWithdraw.call(0)
+  //   assert.equal(interestAvailable, 0);
+  // });
 });

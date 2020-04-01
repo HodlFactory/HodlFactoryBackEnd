@@ -31,11 +31,15 @@ contract cTokenMockup
         return cTokenBalances[_owner];
     }
 
-    function balanceOfUnderlying(address _owner) public returns (uint)
+    function balanceOfUnderlying(address _owner) public view returns (uint)
     {
-        underlying.allocateTo(address(this), daiBalances[_owner]);
-        daiBalances[_owner] = daiBalances[_owner].mul(2);
         return daiBalances[_owner];
+    }
+
+    function generate10PercentInterest(address _owner) public {
+        uint _10percent = daiBalances[_owner].div(10);
+        underlying.allocateTo(address(this), _10percent);
+        daiBalances[_owner] = daiBalances[_owner].add(_10percent);
     }
 
     function mint(uint mintAmount) public returns (uint)
