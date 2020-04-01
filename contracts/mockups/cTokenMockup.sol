@@ -53,6 +53,7 @@ contract cTokenMockup
     function redeemUnderlying(uint redeemAmount) public returns (uint)
     {
         uint _proportion = cTokenBalances[msg.sender].div(redeemAmount);
+        cTokenBalances[msg.sender] = cTokenBalances[msg.sender].sub(redeemAmount);
         underlying.transfer(msg.sender, daiBalances[msg.sender].div(_proportion));
         return 0;
     }
