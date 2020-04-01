@@ -1,0 +1,222 @@
+{
+  "contractName": "SimpleStorage2",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "storedData2",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.12+commit.7709ece9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"storedData2\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/mcplums/Repos/HodlFactory/contracts/SimpleStorage2.sol\":\"SimpleStorage2\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/mcplums/Repos/HodlFactory/contracts/SimpleStorage2.sol\":{\"keccak256\":\"0x43dab0a012ecd5601fb9266d1683654b4ac33bbc9179ff47c912f47d48bc67ff\",\"urls\":[\"bzz-raw://23ef1520a798e4022cc95cc1365d617fc86658e16ec003deffe3faf5d1bde82e\",\"dweb:/ipfs/Qmf7sLeHtxtA2igwKmJpPagch5yYPahx4are1zVHkzPSc9\"]}},\"version\":1}",
+  "bytecode": "0x60806040526045600055348015601457600080fd5b506084806100236000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80633dc2692814602d575b600080fd5b60336049565b6040518082815260200191505060405180910390f35b6000548156fea265627a7a723158209cbb2057be275bdb70adffa6557b6191abb0a24822b4a820ccb203db4176a65364736f6c634300050c0032",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c80633dc2692814602d575b600080fd5b60336049565b6040518082815260200191505060405180910390f35b6000548156fea265627a7a723158209cbb2057be275bdb70adffa6557b6191abb0a24822b4a820ccb203db4176a65364736f6c634300050c0032",
+  "sourceMap": "34:66:4:-;;;94:2;65:31;;34:66;8:9:-1;5:2;;;30:1;27;20:12;5:2;34:66:4;;;;;;;",
+  "deployedSourceMap": "34:66:4:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;34:66:4;;;;;;;;;;;;;;;;;;;65:31;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;:::o",
+  "source": "pragma solidity >=0.4.21 <0.7.0;\n\ncontract SimpleStorage2 {\n\n    uint256 public storedData2 = 69;\n\n}\n",
+  "sourcePath": "/Users/mcplums/Repos/HodlFactory/contracts/SimpleStorage2.sol",
+  "ast": {
+    "absolutePath": "/Users/mcplums/Repos/HodlFactory/contracts/SimpleStorage2.sol",
+    "exportedSymbols": {
+      "SimpleStorage2": [
+        646
+      ]
+    },
+    "id": 647,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 642,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.4",
+          ".21",
+          "<",
+          "0.7",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:32:4"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 646,
+        "linearizedBaseContracts": [
+          646
+        ],
+        "name": "SimpleStorage2",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 645,
+            "name": "storedData2",
+            "nodeType": "VariableDeclaration",
+            "scope": 646,
+            "src": "65:31:4",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 643,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "65:7:4",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "3639",
+              "id": 644,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "94:2:4",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_69_by_1",
+                "typeString": "int_const 69"
+              },
+              "value": "69"
+            },
+            "visibility": "public"
+          }
+        ],
+        "scope": 647,
+        "src": "34:66:4"
+      }
+    ],
+    "src": "0:101:4"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/mcplums/Repos/HodlFactory/contracts/SimpleStorage2.sol",
+    "exportedSymbols": {
+      "SimpleStorage2": [
+        646
+      ]
+    },
+    "id": 647,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 642,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.4",
+          ".21",
+          "<",
+          "0.7",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:32:4"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 646,
+        "linearizedBaseContracts": [
+          646
+        ],
+        "name": "SimpleStorage2",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 645,
+            "name": "storedData2",
+            "nodeType": "VariableDeclaration",
+            "scope": 646,
+            "src": "65:31:4",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 643,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "65:7:4",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "3639",
+              "id": 644,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "94:2:4",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_69_by_1",
+                "typeString": "int_const 69"
+              },
+              "value": "69"
+            },
+            "visibility": "public"
+          }
+        ],
+        "scope": 647,
+        "src": "34:66:4"
+      }
+    ],
+    "src": "0:101:4"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
+  },
+  "networks": {
+    "1585754937668": {
+      "events": {},
+      "links": {},
+      "address": "0x071FaEE0d32e420C88295802a65758a924B56262",
+      "transactionHash": "0xf4b734077a2094c4e96b82bd1800f34736a85dd324e90d876baf31ec845086f5"
+    }
+  },
+  "schemaVersion": "3.0.19",
+  "updatedAt": "2020-04-01T15:29:11.557Z",
+  "networkType": "ethereum",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

@@ -28,7 +28,9 @@ contract cTokenMockup
 
     function balanceOf(address _owner) public view returns (uint)
     {
-        return cTokenBalances[_owner];
+        // require(false, "STFU");
+        // return cTokenBalances[_owner];
+        return 5;
     }
 
     function balanceOfUnderlying(address _owner) public view returns (uint)
