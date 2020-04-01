@@ -28,43 +28,6 @@ export default ({ drizzle, drizzleState }) => {
       </div>
 
       <div className="section">
-        <h2>BuyHodl</h2>
-        <p>
-          This shows a simple ContractData component with no arguments, along
-          with a form to set its value.
-        </p>
-        <p>
-          <strong>Number of HODLs: </strong>
-          <ContractData
-            drizzle={drizzle}
-            drizzleState={drizzleState}
-            contract="ClassicHodlFactory"
-            method="hodlCount"
-          />
-        </p>
-        <p>
-          <strong>cash address: </strong>
-          <ContractData
-            drizzle={drizzle}
-            drizzleState={drizzleState}
-            contract="ClassicHodlFactory"
-            method="testingVariableX"
-          />
-        </p>
-        <p>
-          <strong>cash testing variable: </strong>
-          <ContractData
-            drizzle={drizzle}
-            drizzleState={drizzleState}
-            contract="CashMockup"
-            method="cashTestingVariableA"
-          />
-        </p>
-        <ContractForm drizzle={drizzle} contract="ClassicHodlFactory" method="buyHodl" onlyButton />
-        <ContractForm drizzle={drizzle} contract="ClassicHodlFactory" method="setCashNumber" onlyButton />
-      </div> 
-
-      <div className="section">
         <h2>SimpleStorage</h2>
         <p>
           This shows a simple ContractData component with no arguments, along

@@ -13,17 +13,9 @@ contract CashMockup
     mapping (address => uint) public balances;
     mapping (address => mapping (address => uint ) ) public allowances;
 
-    uint public cashTestingVariableA = 69;
-
-    function set(uint x) public {
-        cashTestingVariableA = x;
-    }
-
     function approve(address _spender, uint _amount) external returns (bool)
     {
-        
-        // allowances[_spender][msg.sender] = _amount;
-        // require(false, "STFU");
+        allowances[_spender][msg.sender] = _amount;
         return true;
     }
 

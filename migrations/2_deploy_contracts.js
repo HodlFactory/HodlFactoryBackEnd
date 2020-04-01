@@ -1,5 +1,4 @@
 const SimpleStorage = artifacts.require("SimpleStorage");
-const SimpleStorage2 = artifacts.require("SimpleStorage2");
 const TutorialToken = artifacts.require("TutorialToken");
 const ComplexStorage = artifacts.require("ComplexStorage");
 const CashMockup = artifacts.require("CashMockup");
@@ -17,10 +16,9 @@ module.exports = function(deployer, network) {
 
   } else {
 
-    deployer.deploy(SimpleStorage);
-    deployer.deploy(SimpleStorage2);
-    deployer.deploy(TutorialToken);
-    deployer.deploy(ComplexStorage);
+    // deployer.deploy(SimpleStorage);
+    // deployer.deploy(TutorialToken);
+    // deployer.deploy(ComplexStorage);
     deployer.deploy(CashMockup).then((deployedCash) => {
       return deployer.deploy(cTokenMockup, deployedCash.address).then((deployedcToken) => {
         return deployer.deploy(ClassicHodlFactory, deployedCash.address, deployedcToken.address);
