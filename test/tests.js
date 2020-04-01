@@ -40,9 +40,40 @@ contract('HodlFactoryTests', (accounts) => {
     assert.equal(getFxRate, 45454); //= 5000 / 110 * 1000 rounded down
   });
 
-  // it('check interestAvailableToWithdraw', async () => {
-  //   await hodlFactory.buyHodl();
-  //   var interestAvailable = await hodlFactory.interestAvailableToWithdraw.call(0)
-  //   assert.equal(interestAvailable, 0);
-  // });
+  it('check interestAvailableToWithdraw', async () => {
+    await hodlFactory.buyHodl();
+    var interestAvailable = await hodlFactory.interestAvailableToWithdraw.call(0)
+    assert.equal(interestAvailable, 0);
+    await cToken.generate10PercentInterest(hodlFactory.address);
+    var interestAvailable = await hodlFactory.interestAvailableToWithdraw.call(0)
+    var difference = interestAvailable - web3.utils.toWei('10', 'ether');
+    assert.isBelow(difference/interestAvailable,0.001);
+  });
+
+  it('test withdrawInterest', async() => {
+    await hodlFactory.buyHodl();
+    await cToken.generate10PercentInterest(hodlFactory.address);
+    // check ctoken has 110 dai left
+    var daiBalance = await cash.balanceOf(cToken.address);
+    var difference = daiBalance - web3.utils.toWei('120', 'ether');
+    assert.isBelow(difference/daiBalance,0.001);
+    // check hdolFactory has 5000 cDai
+    var cTokenBalance = await cToken.balanceOf.call(hodlFactory.address);
+    cTokenBalance = cTokenBalance * 10000000000;
+    assert.equal(web3.utils.toWei('5000', 'ether'), cTokenBalance);
+    // withdraw interest and check user has 10 dai interest sent to them
+    await hodlFactory.withdrawInterest(0);
+    var daiBalance = await cash.balanceOf(user);
+    var difference = daiBalance - web3.utils.toWei('10', 'ether');
+    assert.isBelow(difference/daiBalance,0.001);
+    // check contract still has 100 dai left
+    var daiBalance = await cash.balanceOf(cToken.address);
+    var difference = daiBalance - web3.utils.toWei('100', 'ether');
+    assert.isBelow(difference/daiBalance,0.001);
+    // check hdolFactory has 5000 cDai less 9%
+    var cTokenBalance = await cToken.balanceOf.call(hodlFactory.address);
+    cTokenBalance = cTokenBalance * 10000000000;
+    var difference = cTokenBalance - (web3.utils.toWei('5000', 'ether') * 100 / 110);
+    assert.isBelow(difference/cTokenBalance,0.001);
+  });
 });
