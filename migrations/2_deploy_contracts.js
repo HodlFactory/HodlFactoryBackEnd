@@ -16,9 +16,9 @@ module.exports = function(deployer, network) {
 
   } else {
 
-    // deployer.deploy(SimpleStorage);
-    // deployer.deploy(TutorialToken);
-    // deployer.deploy(ComplexStorage);
+    deployer.deploy(SimpleStorage);
+    deployer.deploy(TutorialToken);
+    deployer.deploy(ComplexStorage);
     deployer.deploy(CashMockup).then((deployedCash) => {
       return deployer.deploy(cTokenMockup, deployedCash.address).then((deployedcToken) => {
         return deployer.deploy(ClassicHodlFactory, deployedCash.address, deployedcToken.address);

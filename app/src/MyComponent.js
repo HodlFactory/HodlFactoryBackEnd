@@ -9,10 +9,10 @@ export default ({ drizzle, drizzleState }) => {
   return (
     <div className="App">
       <div>
-        <img src={logo} alt="drizzle-logo" />
-        <h1>Drizzle Examples</h1>
+        {/* <img src={logo} alt="drizzle-logo" /> */}
+        <h1>HodlFactrory</h1>
         <p>
-          Examples of how to get started with Drizzle in various situations.
+          MVP
         </p>
       </div>
 
@@ -25,6 +25,32 @@ export default ({ drizzle, drizzleState }) => {
           units="ether"
           precision={3}
         />
+      </div>
+
+      <div className="section">
+        <h2>HodlFactory</h2>
+        <p>
+          All this does is tell you how many HODLs have been created, and a button to create a HODL. You can verify that a HODL is indeed being created via etherscan. The HODLs are already almost feature complete, they connect to compound and the dai will start to earn interest immediately. Although the HODLs cost 100 Dai, you do not need any to create one, as 100 Dai is added to your account automatically via a faucet when you purchase a HODL. 
+        </p>
+        <p>
+          <strong>Number of HODLs created </strong>
+          <ContractData
+            drizzle={drizzle}
+            drizzleState={drizzleState}
+            contract="ClassicHodlFactory"
+            method="hodlCount"
+          />
+        </p>
+        <strong>Create HODL: </strong>
+        <ContractForm drizzle={drizzle} contract="ClassicHodlFactory" method="buyHodl" onlyButton />
+      </div>
+
+      <div>
+        <img src={logo} alt="drizzle-logo" />
+        <h1>React/Drizzle Examples</h1>
+        <p>
+          Below are tutorial integrations with the blockchain to aid understanding.
+        </p>
       </div>
 
       <div className="section">
