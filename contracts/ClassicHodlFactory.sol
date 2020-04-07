@@ -21,7 +21,8 @@ interface ICErc20 {
     function balanceOfUnderlying(address owner) external returns (uint);
     function getCash() external view returns (uint);
     function supplyRatePerBlock() external view returns (uint);
-    function balanceOf(address _ownesr) external view returns (uint);
+    function balanceOf(address _owners) external view returns (uint);
+    function exchangeRateStored() external view returns (uint);
 }
 
 contract ClassicHodlFactory is ERC721Full {
@@ -40,10 +41,12 @@ contract ClassicHodlFactory is ERC721Full {
     }
 
     uint public hodlCount = 0;
-    uint constant public oneHundredDai = 100000000000000000000;
+    uint constant public oneHundredDai = 10**20;
     uint public testingVariableA = 0;
     uint public testingVariableB = 0;
     uint public testingVariableC = 0;
+    uint public testingVariableD = 0;
+    uint public testingVariableE = 0;
 
      struct hodl {
         address owner;
@@ -75,10 +78,27 @@ contract ClassicHodlFactory is ERC721Full {
         return _totalCDaiBalanceTimesOneThousand.div(_totalDaiBalance);
     }
 
-    function interestAvailableToWithdraw(uint _hodlId) public returns (uint) {
-        uint _cTokenBalanceTimesOneThousand = hodlTracker[_hodlId].cTokenBalance.mul(1000);
-        uint _daiBalance = _cTokenBalanceTimesOneThousand.div(getFxRateTimesOneThousand());
+    // function getActuaInterestAvailableToWithdraw(uint _hodlId) public returns (uint) {
+    //     uint _cTokenBalanceTimesOneThousand = hodlTracker[_hodlId].cTokenBalance.mul(1000);
+    //     uint _daiBalance = _cTokenBalanceTimesOneThousand.div(getFxRateTimesOneThousand());
+    //     return (_daiBalance.sub(oneHundredDai);
+    // }
+
+    function getEstimatedInterestAvailableToWithdraw(uint _hodlId) public view returns (uint) {
+        uint _cTokenBalance = hodlTracker[_hodlId].cTokenBalance;
+        uint _daiBalance = (cToken.exchangeRateStored().mul(_cTokenBalance)).div(10**17);
         return (_daiBalance - oneHundredDai);
+    }
+
+    function getEstimatedHodlValue(uint _hodlId) public  returns (uint) {
+        uint _cTokenBalance = hodlTracker[_hodlId].cTokenBalance;
+        testingVariableA = _cTokenBalance;
+        testingVariableB = cToken.exchangeRateStored();
+        testingVariableC = cToken.exchangeRateStored().mul(_cTokenBalance);
+        uint _daiBalance = (cToken.exchangeRateStored().mul(_cTokenBalance)).div(10**28);
+        testingVariableD = _daiBalance;
+        // testingVariableD = 
+        return (_daiBalance);
     }
 
     function buyHodl() public {
@@ -97,16 +117,16 @@ contract ClassicHodlFactory is ERC721Full {
         hodlCount = hodlCount.add(1);
     } 
 
-    function withdrawInterest(uint _hodlId) external {
-        require(msg.sender == ownerOf(_hodlId), "Not owner");
-        uint _interestAvailableToWithdraw = interestAvailableToWithdraw(_hodlId);
-        require(_interestAvailableToWithdraw > 0, "No interest to withdraw");
-        uint _denominator = (oneHundredDai.add(_interestAvailableToWithdraw)).div(_interestAvailableToWithdraw);
-        uint _cTokensToWithdraw = hodlTracker[_hodlId].cTokenBalance.div(_denominator);
-        uint _daiToReturn = cToken.redeemUnderlying(_cTokensToWithdraw.div(10000000000));
-        underlying.transfer(msg.sender ,_daiToReturn);
-        // testingVariableA = _cTokensToWithdraw;
-        // emit stfu(testingVariableA);
-    }
+    // function withdrawInterest(uint _hodlId) external {
+    //     address _owner = hodlTracker[_hodlId].owner;
+    //     uint _actualinterestAvailableToWithdraw = getActuaInterestAvailableToWithdraw(_hodlId);
+    //     require(_actualinterestAvailableToWithdraw > 0, "No interest to withdraw");
+    //     uint _denominator = (oneHundredDai.add(_actualinterestAvailableToWithdraw)).div(_actualinterestAvailableToWithdraw);
+    //     uint _cTokensToWithdraw = hodlTracker[_hodlId].cTokenBalance.div(_denominator);
+    //     uint _daiToReturn = cToken.redeemUnderlying(_cTokensToWithdraw.div(10000000000));
+    //     underlying.transfer(_owner ,_daiToReturn);
+    //     // testingVariableA = _cTokensToWithdraw;
+    //     // emit stfu(testingVariableA);
+    // }
 
 }

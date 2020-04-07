@@ -19,7 +19,8 @@ interface IRToken
 {
     function mint(uint256 mintAmount) external returns (bool);
     function balanceOf(address) view external;
-    function getMaximumHatID() external view returns (uint256 hatID);
+    function getMaximumHatID() external view returns (uint256 hatID);    
+    function payInterest(address owner) external returns (bool);
 }
 
 contract CharityHodlFactory is ERC721Full {
@@ -71,5 +72,17 @@ contract CharityHodlFactory is ERC721Full {
         _mint(msg.sender, hodlCount);
         hodlCount = hodlCount.add(1);
     } 
+
+    function getInterestFromRToken() external {
+        
+        uint _interestAvailableToWithdraw = interestAvailableToWithdraw(_hodlId);
+        require(_interestAvailableToWithdraw > 0, "No interest to withdraw");
+        uint _denominator = (oneHundredDai.add(_interestAvailableToWithdraw)).div(_interestAvailableToWithdraw);
+        uint _cTokensToWithdraw = hodlTracker[_hodlId].cTokenBalance.div(_denominator);
+        uint _daiToReturn = cToken.redeemUnderlying(_cTokensToWithdraw.div(10000000000));
+        underlying.transfer(msg.sender ,_daiToReturn);
+        // testingVariableA = _cTokensToWithdraw;
+        // emit stfu(testingVariableA);
+    }
 
 }

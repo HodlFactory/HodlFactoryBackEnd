@@ -40,12 +40,12 @@ contract('HodlFactoryTests', (accounts) => {
     assert.equal(getFxRate, 45454); //= 5000 / 110 * 1000 rounded down
   });
 
-  it('check interestAvailableToWithdraw', async () => {
+  it('check getActualinterestAvailableToWithdraw', async () => {
     await hodlFactory.buyHodl();
-    var interestAvailable = await hodlFactory.interestAvailableToWithdraw.call(0)
+    var interestAvailable = await hodlFactory.getActualinterestAvailableToWithdraw.call(0)
     assert.equal(interestAvailable, 0);
     await cToken.generate10PercentInterest(hodlFactory.address);
-    var interestAvailable = await hodlFactory.interestAvailableToWithdraw.call(0)
+    var interestAvailable = await hodlFactory.getActualinterestAvailableToWithdraw.call(0)
     var difference = interestAvailable - web3.utils.toWei('10', 'ether');
     assert.isBelow(difference/interestAvailable,0.001);
   });
