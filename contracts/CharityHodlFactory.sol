@@ -73,16 +73,16 @@ contract CharityHodlFactory is ERC721Full {
         hodlCount = hodlCount.add(1);
     } 
 
-    function getInterestFromRToken() external {
-        
-        uint _interestAvailableToWithdraw = interestAvailableToWithdraw(_hodlId);
-        require(_interestAvailableToWithdraw > 0, "No interest to withdraw");
-        uint _denominator = (oneHundredDai.add(_interestAvailableToWithdraw)).div(_interestAvailableToWithdraw);
-        uint _cTokensToWithdraw = hodlTracker[_hodlId].cTokenBalance.div(_denominator);
-        uint _daiToReturn = cToken.redeemUnderlying(_cTokensToWithdraw.div(10000000000));
-        underlying.transfer(msg.sender ,_daiToReturn);
-        // testingVariableA = _cTokensToWithdraw;
-        // emit stfu(testingVariableA);
-    }
+    // function getInterestFromRToken() external {
+
+    //     uint _interestAvailableToWithdraw = interestAvailableToWithdraw(_hodlId);
+    //     require(_interestAvailableToWithdraw > 0, "No interest to withdraw");
+    //     uint _denominator = (oneHundredDai.add(_interestAvailableToWithdraw)).div(_interestAvailableToWithdraw);
+    //     uint _cTokensToWithdraw = hodlTracker[_hodlId].cTokenBalance.div(_denominator);
+    //     uint _daiToReturn = cToken.redeemUnderlying(_cTokensToWithdraw.div(10000000000));
+    //     underlying.transfer(msg.sender ,_daiToReturn);
+    //     // testingVariableA = _cTokensToWithdraw;
+    //     // emit stfu(testingVariableA);
+    // }
 
 }

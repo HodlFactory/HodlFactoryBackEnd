@@ -9,35 +9,36 @@ interface Cash
 {
     function approve(address _spender, uint _amount) external returns (bool);
     function balanceOf(address _ownesr) external view returns (uint);
-    function faucet(uint _amount) external;
-    function transfer(address _to, uint _amount) external returns (bool);
-    function transferFrom(address _from, address _to, uint _amount) external returns (bool);
-    function allocateTo(address recipient, uint value) external;
+    function mint(uint256) external;
 }
 
-interface ICErc20 {
-    function mint(uint mintAmount) external returns (uint);
-    function redeemUnderlying(uint redeemAmount) external returns (uint);
-    function balanceOfUnderlying(address owner) external returns (uint);
-    function getCash() external view returns (uint);
-    function supplyRatePerBlock() external view returns (uint);
-    function balanceOf(address _owners) external view returns (uint);
-    function exchangeRateStored() external view returns (uint);
+interface IaToken 
+{
+    function balanceOf(address _user) external view returns(uint);
+    function redeem(uint256 _amount) external;
 }
+
+interface IAaveLendingPool 
+{
+    function deposit( address _reserve, uint256 _amount, uint16 _referralCode) external;
+}
+
+interface IAaveLendingPoolCore {}
 
 contract ClassicHodlFactory is ERC721Full {
 
     using SafeMath for uint;
 
-    ICErc20 cToken;
     Cash underlying;
+    IaToken aToken;
+    IAaveLendingPool aaveLendingPool;
+    IAaveLendingPoolCore aaveLendingPoolCore;
 
-    address public cashAddress;
-
-    constructor(address _cashAddress, address _cTokenAddress) ERC721Full("HodlFactory", "HODL") public { 
-        cToken = ICErc20(_cTokenAddress); 
+    constructor(address _cashAddress, address _aTokenAddress, address _aaveLpAddress, address _aaveLpcoreAddress ) ERC721Full("HodlFactory", "HODL") public { 
         underlying = Cash(_cashAddress);
-        cashAddress = _cashAddress;
+        aToken = IaToken(_aTokenAddress); 
+        aaveLendingPool = IAaveLendingPool(_aaveLpAddress); 
+        aaveLendingPoolCore = IAaveLendingPoolCore(_aaveLpcoreAddress); 
     }
 
     uint public hodlCount = 0;
@@ -51,7 +52,7 @@ contract ClassicHodlFactory is ERC721Full {
      struct hodl {
         address owner;
         uint purchaseTime;
-        uint cTokenBalance;
+        uint interestWithdrawnTime;
     }
 
     mapping (uint => hodl) public hodlTracker; 
@@ -66,17 +67,13 @@ contract ClassicHodlFactory is ERC721Full {
         return hodlTracker[_hodlId].purchaseTime;
     }
 
-    function getHodlTokenBalance(uint _hodlId) external view returns (uint) {
-        return hodlTracker[_hodlId].cTokenBalance;
-    }
-
-    // x 1000 to increase FX rate resolution
-    function getFxRateTimesOneThousand() public returns (uint) {
-        uint _totalCDaiBalance = cToken.balanceOf(address(this)).mul(10000000000); // scales it up to atto cDai
-        uint _totalCDaiBalanceTimesOneThousand = _totalCDaiBalance.mul(1000); 
-        uint _totalDaiBalance = cToken.balanceOfUnderlying(address(this));
-        return _totalCDaiBalanceTimesOneThousand.div(_totalDaiBalance);
-    }
+    // // x 1000 to increase FX rate resolution
+    // function getFxRateTimesOneThousand() public returns (uint) {
+    //     uint _totalCDaiBalance = cToken.balanceOf(address(this)).mul(10000000000); // scales it up to atto cDai
+    //     uint _totalCDaiBalanceTimesOneThousand = _totalCDaiBalance.mul(1000); 
+    //     uint _totalDaiBalance = cToken.balanceOfUnderlying(address(this));
+    //     return _totalCDaiBalanceTimesOneThousand.div(_totalDaiBalance);
+    // }
 
     // function getActuaInterestAvailableToWithdraw(uint _hodlId) public returns (uint) {
     //     uint _cTokenBalanceTimesOneThousand = hodlTracker[_hodlId].cTokenBalance.mul(1000);
@@ -84,38 +81,44 @@ contract ClassicHodlFactory is ERC721Full {
     //     return (_daiBalance.sub(oneHundredDai);
     // }
 
-    function getEstimatedInterestAvailableToWithdraw(uint _hodlId) public view returns (uint) {
-        uint _cTokenBalance = hodlTracker[_hodlId].cTokenBalance;
-        uint _daiBalance = (cToken.exchangeRateStored().mul(_cTokenBalance)).div(10**17);
-        return (_daiBalance - oneHundredDai);
-    }
+    // function getEstimatedInterestAvailableToWithdraw(uint _hodlId) public view returns (uint) {
+    //     uint _cTokenBalance = hodlTracker[_hodlId].cTokenBalance;
+    //     uint _daiBalance = (cToken.exchangeRateStored().mul(_cTokenBalance)).div(10**17);
+    //     return (_daiBalance - oneHundredDai);
+    // }
 
-    function getEstimatedHodlValue(uint _hodlId) public  returns (uint) {
-        uint _cTokenBalance = hodlTracker[_hodlId].cTokenBalance;
-        testingVariableA = _cTokenBalance;
-        testingVariableB = cToken.exchangeRateStored();
-        testingVariableC = cToken.exchangeRateStored().mul(_cTokenBalance);
-        uint _daiBalance = (cToken.exchangeRateStored().mul(_cTokenBalance)).div(10**28);
-        testingVariableD = _daiBalance;
-        // testingVariableD = 
-        return (_daiBalance);
+    // function getEstimatedHodlValue(uint _hodlId) public  returns (uint) {
+    //     uint _cTokenBalance = hodlTracker[_hodlId].cTokenBalance;
+    //     testingVariableA = _cTokenBalance;
+    //     testingVariableB = cToken.exchangeRateStored();
+    //     testingVariableC = cToken.exchangeRateStored().mul(_cTokenBalance);
+    //     uint _daiBalance = (cToken.exchangeRateStored().mul(_cTokenBalance)).div(10**28);
+    //     testingVariableD = _daiBalance;
+    //     // testingVariableD = 
+    //     return (_daiBalance);
+    // }
+
+    function getInterestAvailableToWithdraw(uint _hodlId) returns (uint) {
+        uint _totalaDaiBalance = aToken.balanceOf(address(this));
     }
 
     function buyHodl() public {
         // UPDATE VARIABLES
         hodlTracker[hodlCount].owner = msg.sender;
         hodlTracker[hodlCount].purchaseTime = now;
+        hodlTracker[hodlCount].interestWithdrawnTime = now;
          // SWAP DAI FOR cDAI
-        underlying.allocateTo(address(this), oneHundredDai); // just send dai to the contract so dont need to worry about approve shit
-        underlying.approve(address(cToken), oneHundredDai);
-        uint _cTokenBalanceBefore = cToken.balanceOf(address(this)).mul(10000000000); // scales it up to atto cDai
-        assert(cToken.mint(oneHundredDai) == 0); 
-        uint _cTokenBalanceAfter = cToken.balanceOf(address(this)).mul(10000000000); // scales it up to atto cDai
-        hodlTracker[hodlCount].cTokenBalance = _cTokenBalanceAfter - _cTokenBalanceBefore;
+        underlying.mint(oneHundredDai); 
+        underlying.approve(address(aaveLendingPoolCore), oneHundredDai);
+        aaveLendingPool.deposit(address(underlying), oneHundredDai, 0);
         // // GENERATE NFT
         _mint(msg.sender, hodlCount);
         hodlCount = hodlCount.add(1);
     } 
+
+    function getAdaiBalance() public view returns (uint) {
+        return(aToken.balanceOf(address(this)));
+    }
 
     // function withdrawInterest(uint _hodlId) external {
     //     address _owner = hodlTracker[_hodlId].owner;
