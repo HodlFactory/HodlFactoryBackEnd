@@ -9,10 +9,7 @@ interface Cash
 {
     function approve(address _spender, uint _amount) external returns (bool);
     function balanceOf(address _ownesr) external view returns (uint);
-    function faucet(uint _amount) external;
     function transfer(address _to, uint _amount) external returns (bool);
-    function transferFrom(address _from, address _to, uint _amount) external returns (bool);
-    function allocateTo(address recipient, uint value) external;
 }
 
 interface IRToken
@@ -21,6 +18,8 @@ interface IRToken
     function balanceOf(address) view external;
     function getMaximumHatID() external view returns (uint256 hatID);    
     function payInterest(address owner) external returns (bool);
+    function interestPayableOf(address owner) external view returns (uint256 amount);
+    function redeem(uint256 redeemTokens) external returns (bool);
 }
 
 contract CharityHodlFactory is ERC721Full {
@@ -39,14 +38,16 @@ contract CharityHodlFactory is ERC721Full {
     }
 
     uint public hodlCount = 0;
-    uint constant public oneHundredDai = 1000000000000000000; //this is actually 1 Dai for now
+    uint public averageTimeLastWithdrawn = 0;
+    uint constant public oneHundredDai = 10**18; //this is actually 1 Dai for now
     uint public testingVariableA = 0;
     uint public testingVariableB = 0;
     uint public testingVariableC = 0;
 
      struct hodl {
-        address owner;
         uint purchaseTime;
+        uint interestLastWithdrawnTime;
+        address interestRecipient;
     }
 
     mapping (uint => hodl) public hodlTracker; 
@@ -54,7 +55,7 @@ contract CharityHodlFactory is ERC721Full {
     event stfu(uint indexed stfu);
 
     function getHodlOwner(uint _hodlId) external view returns (address) {
-        return hodlTracker[_hodlId].owner;
+        return ownerOf(_hodlId);
     }
 
     function getHodlPurchaseTime(uint _hodlId) external view returns (uint) {
@@ -63,9 +64,10 @@ contract CharityHodlFactory is ERC721Full {
 
     function buyHodl() public {
         // UPDATE VARIABLES
-        hodlTracker[hodlCount].owner = msg.sender;
-        hodlTracker[hodlCount].purchaseTime = now;
-         // SWAP DAI FOR rDAI
+        hodlTracker[hodlCount].interestLastWithdrawnTime = now;
+        averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).add(now)).div(hodlCount.add(1));
+        // SWAP DAI FOR rDAI 
+        // I need to transfer Dai to the contract seperately, annoyingly 
         underlying.approve(address(rToken), oneHundredDai);
         assert(rToken.mint(oneHundredDai)); 
         // // GENERATE NFT
@@ -73,16 +75,39 @@ contract CharityHodlFactory is ERC721Full {
         hodlCount = hodlCount.add(1);
     } 
 
-    // function getInterestFromRToken() external {
+    function getInterestAvailableToWithdraw(uint _hodlId) public view returns (uint) {
+        uint _totalRdaiBalance = rToken.interestPayableOf(address(this));
+        uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
+        assert (_totalRdaiBalance > _totalDaiBalance);
+        uint _totalInterestAvailable = _totalRdaiBalance.sub(_totalDaiBalance);
+        uint _numerator = _totalInterestAvailable.mul(now.sub(hodlTracker[_hodlId].interestLastWithdrawnTime));
+        uint _denominator = (now.sub(averageTimeLastWithdrawn)).mul(hodlCount);
+        return (_numerator.div(_denominator));
+    }
 
-    //     uint _interestAvailableToWithdraw = interestAvailableToWithdraw(_hodlId);
-    //     require(_interestAvailableToWithdraw > 0, "No interest to withdraw");
-    //     uint _denominator = (oneHundredDai.add(_interestAvailableToWithdraw)).div(_interestAvailableToWithdraw);
-    //     uint _cTokensToWithdraw = hodlTracker[_hodlId].cTokenBalance.div(_denominator);
-    //     uint _daiToReturn = cToken.redeemUnderlying(_cTokensToWithdraw.div(10000000000));
-    //     underlying.transfer(msg.sender ,_daiToReturn);
-    //     // testingVariableA = _cTokensToWithdraw;
-    //     // emit stfu(testingVariableA);
-    // }
+    function withdrawInterest(uint _hodlId) public {
+        // update variables
+        uint _sumOfLastWithdrawTimes = averageTimeLastWithdrawn.mul(hodlCount);
+        uint _sumOfLastWithdrawTimesUpdated = _sumOfLastWithdrawTimes.add(now).sub(hodlTracker[_hodlId].interestLastWithdrawnTime);
+        averageTimeLastWithdrawn = _sumOfLastWithdrawTimesUpdated.div(hodlCount);
+        hodlTracker[_hodlId].interestLastWithdrawnTime = now;
+        // external calls
+        uint _interestToWithdraw = getInterestAvailableToWithdraw(_hodlId);
+        assert(rToken.redeem(_interestToWithdraw));
+        underlying.transfer(hodlTracker[_hodlId].interestRecipient, _interestToWithdraw);
+    }
+
+    function destroyHodl(uint _hodlId) public {
+        require (ownerOf(_hodlId) == msg.sender, "Not owner");
+        require (hodlTracker[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
+        // update variables
+        averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlTracker[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
+        hodlCount = hodlCount.sub(1);
+        // external calls
+        _burn(_hodlId);
+        withdrawInterest(_hodlId);
+        rToken.redeem(oneHundredDai);
+        underlying.transfer(ownerOf(_hodlId), oneHundredDai);
+    }
 
 }

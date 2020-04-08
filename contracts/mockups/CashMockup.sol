@@ -29,6 +29,13 @@ contract CashMockup
         balances[_recipient] = balances[_recipient].add(_amount);
     }
 
+    function mint(uint _amount) external
+    {
+        
+        balances[msg.sender] = balances[msg.sender].add(_amount);
+    }
+
+
     function transfer(address _to, uint _amount) external returns (bool)
     {   
         require (balances[msg.sender] >= _amount, "Insufficient balance");
