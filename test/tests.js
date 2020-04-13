@@ -41,28 +41,24 @@ contract('HodlFactoryTests', (accounts) => {
     purchaseTime1 = await time.latest();
     await hodlFactory.createHodl();
     var averagePurchaseTime = await hodlFactory.averageTimeLastWithdrawn.call();
-    assert.equal(purchaseTime1,averagePurchaseTime);
+    assert.equal(purchaseTime1.toString(),averagePurchaseTime.toString());
     // hodl2
     await time.increase(time.duration.weeks(1));
     purchaseTime2 = await time.latest();
     await hodlFactory.createHodl();
     averagePurchaseTime = await hodlFactory.averageTimeLastWithdrawn.call();
-    var averagePurchaseTimeShouldBe = average(purchaseTime1,purchaseTime2);
-    assert.equal(averagePurchaseTimeShouldBe,averagePurchaseTime);
+    var averagePurchaseTimeShouldBe = (purchaseTime1.toNumber() + purchaseTime2.toNumber())/2;
+    assert.equal(averagePurchaseTimeShouldBe,averagePurchaseTime.toNumber());
   });
 
-  // it('check getInterestAvailableToWithdraw', async () => {
-  //   await hodlFactory.createHodl();
-  //   await aToken.generate10PercentInterest(hodlFactory.address);
-  //   await time.increase(time.duration.days(1));
-  //   await hodlFactory.getInterestAvailableToWithdraw(0);
-  //   var testingVariableA = await hodlFactory.testingVariableA.call();
-  //   console.log(testingVariableA);
-  //   var testingVariableB = await hodlFactory.testingVariableB.call();
-  //   console.log(testingVariableB);
-  //   var testingVariableC = await hodlFactory.testingVariableC.call();
-  //   console.log(testingVariableC);
-  // });
+  it('check getInterestAvailableToWithdraw, single HODL', async () => {
+    await hodlFactory.createHodl();
+    await aToken.generate10PercentInterest(hodlFactory.address);
+    await time.increase(time.duration.days(1)); // to avoid multiply by zero when doing now - purchase time
+    var interestAvailable = await hodlFactory.getInterestAvailableToWithdraw.call(0);
+    var interestAvailableShouldBe = new BN(web3.utils.toWei('10', 'ether'));
+    assert.equal(interestAvailable.toString(),interestAvailableShouldBe.toString());
+  });
 
   // it('check getFxRateTimesOneThousand', async () => {
   //   await hodlFactory.buyHodl();
