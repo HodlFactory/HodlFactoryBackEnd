@@ -94,13 +94,14 @@ contract ClassicHodlFactory is ERC721Full {
     }
 
     function withdrawInterest(uint _hodlId) public {
+        uint _interestToWithdraw = getInterestAvailableToWithdraw(_hodlId);
+        testingVariableA = _interestToWithdraw;
         // update variables
         uint _sumOfLastWithdrawTimes = averageTimeLastWithdrawn.mul(hodlCount);
         uint _sumOfLastWithdrawTimesUpdated = _sumOfLastWithdrawTimes.add(now).sub(hodlTracker[_hodlId].interestLastWithdrawnTime);
         averageTimeLastWithdrawn = _sumOfLastWithdrawTimesUpdated.div(hodlCount);
         hodlTracker[_hodlId].interestLastWithdrawnTime = now;
         // external calls
-        uint _interestToWithdraw = getInterestAvailableToWithdraw(_hodlId);
         aToken.redeem(_interestToWithdraw);
         underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
     }
