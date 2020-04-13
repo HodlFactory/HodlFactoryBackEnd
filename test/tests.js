@@ -1,3 +1,12 @@
+const {
+  BN,
+  shouldFail,
+  ether,
+  expectEvent,
+  balance,
+  time
+} = require('openzeppelin-test-helpers');
+
 const CashMockup = artifacts.require("CashMockup");
 const aTokenMockup = artifacts.require("aTokenMockup");
 const ClassicHodlFactory = artifacts.require("ClassicHodlFactory");
@@ -27,21 +36,33 @@ contract('HodlFactoryTests', (accounts) => {
     assert.equal(user, hodlOwner);
   });
 
-  it('check getInterestAvailableToWithdraw', async () => {
+  it('create second Hodl, check averageTimeLastWithdrawn', async () => {
+    // hodl1
+    purchaseTime1 = await time.latest();
     await hodlFactory.createHodl();
-    var hodlCount = await hodlFactory.hodlCount.call();
-    assert.equal(hodlCount,1);
-    await aToken.generate10PercentInterest(hodlFactory.address);
-    await hodlFactory.getInterestAvailableToWithdraw.call(0);
-    var hodlCount = await hodlFactory.hodlCount.call();
-    assert.equal(hodlCount,1);
-    var testingVariableA = await hodlFactory.testingVariableA.call();
-    console.log(testingVariableA);
-    // var testingVariableB = await hodlFactory.testingVariableB.call();
-    // console.log(testingVariableB);
-    // var testingVariableC = await hodlFactory.testingVariableC.call();
-    // console.log(testingVariableC);
+    var averagePurchaseTime = await hodlFactory.averageTimeLastWithdrawn.call();
+    assert.equal(purchaseTime1,averagePurchaseTime);
+    // hodl2
+    await time.increase(time.duration.weeks(1));
+    purchaseTime2 = await time.latest();
+    await hodlFactory.createHodl();
+    averagePurchaseTime = await hodlFactory.averageTimeLastWithdrawn.call();
+    var averagePurchaseTimeShouldBe = average(purchaseTime1,purchaseTime2);
+    assert.equal(averagePurchaseTimeShouldBe,averagePurchaseTime);
   });
+
+  // it('check getInterestAvailableToWithdraw', async () => {
+  //   await hodlFactory.createHodl();
+  //   await aToken.generate10PercentInterest(hodlFactory.address);
+  //   await time.increase(time.duration.days(1));
+  //   await hodlFactory.getInterestAvailableToWithdraw(0);
+  //   var testingVariableA = await hodlFactory.testingVariableA.call();
+  //   console.log(testingVariableA);
+  //   var testingVariableB = await hodlFactory.testingVariableB.call();
+  //   console.log(testingVariableB);
+  //   var testingVariableC = await hodlFactory.testingVariableC.call();
+  //   console.log(testingVariableC);
+  // });
 
   // it('check getFxRateTimesOneThousand', async () => {
   //   await hodlFactory.buyHodl();

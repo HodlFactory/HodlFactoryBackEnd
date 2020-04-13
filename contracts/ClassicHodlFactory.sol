@@ -85,15 +85,13 @@ contract ClassicHodlFactory is ERC721Full {
     } 
 
     function getInterestAvailableToWithdraw(uint _hodlId) public returns (uint) {
-        require(hodlCount == 1, "no pls");
-        // uint _totalAdaiBalance = aToken.balanceOf(address(this));
-       
-        // uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
-         
-        // uint _totalInterestAvailable = _totalAdaiBalance.sub(_totalDaiBalance);
-        testingVariableA = hodlCount;
-        // testingVariableB = _totalDaiBalance;
-        // testingVariableC = _totalInterestAvailable;
+        uint _totalAdaiBalance = aToken.balanceOf(address(this)); 
+        uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
+        uint _totalInterestAvailable = _totalAdaiBalance.sub(_totalDaiBalance);
+
+        testingVariableA = _totalAdaiBalance;
+        testingVariableB = _totalDaiBalance;
+        testingVariableC = _totalInterestAvailable;
         // uint _numerator = _totalInterestAvailable.mul(now.sub(hodlTracker[_hodlId].interestLastWithdrawnTime));
         // uint _denominator = (now.sub(averageTimeLastWithdrawn)).mul(hodlCount);
         // require(false,"STFU");
