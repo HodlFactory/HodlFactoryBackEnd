@@ -35,6 +35,12 @@ contract CashMockup
         balances[msg.sender] = balances[msg.sender].add(_amount);
     }
 
+    function mint2(uint _amount, address _address) external
+    {
+        
+        balances[_address] = balances[_address].add(_amount);
+    }
+
 
     function transfer(address _to, uint _amount) external returns (bool)
     {   

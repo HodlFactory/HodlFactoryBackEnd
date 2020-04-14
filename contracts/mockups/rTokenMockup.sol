@@ -11,6 +11,7 @@ interface Cash
     function transferFrom(address _from, address _to, uint _amount) external returns (bool);
     function allocateTo(address recipient, uint value) external;
     function mint(uint256) external;
+    function mint2(uint256,address) external;
 }
 contract rTokenMockup
 
@@ -35,7 +36,7 @@ contract rTokenMockup
 
     function mint(uint mintAmount) public returns (bool)
     {
-        underlying.mint(oneHundredDai);
+        underlying.mint2(mintAmount, msg.sender);
         underlying.transferFrom(msg.sender, address(this), mintAmount);
         daiBalances[msg.sender] = daiBalances[msg.sender].add(mintAmount);
         rTokenBalances[msg.sender] = rTokenBalances[msg.sender].add(mintAmount);

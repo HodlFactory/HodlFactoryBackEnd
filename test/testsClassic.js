@@ -11,7 +11,7 @@ const CashMockup = artifacts.require("CashMockup");
 const aTokenMockup = artifacts.require("aTokenMockup");
 const ClassicHodlFactory = artifacts.require("ClassicHodlFactory");
 
-contract('HodlFactoryTests', (accounts) => {
+contract('ClassicHodlFactoryTests', (accounts) => {
 
   user = accounts[0];
   user0 = accounts[0];

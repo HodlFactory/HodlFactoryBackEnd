@@ -38,7 +38,7 @@ contract CharityHodlFactory is ERC721Full {
 
     uint public hodlCount = 0;
     uint public averageTimeLastWithdrawn = 0;
-    uint constant public oneHundredDai = 10**18; //this is actually 1 Dai for now
+    uint constant public oneHundredDai = 10**20; 
     uint public testingVariableA = 0;
     uint public testingVariableB = 0;
     uint public testingVariableC = 0;
