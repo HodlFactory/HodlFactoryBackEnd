@@ -76,9 +76,7 @@ contract ClassicHodlFactory is ERC721Full {
          // SWAP DAI FOR aDAI
         underlying.mint(oneHundredDai);
         underlying.approve(address(aaveLendingPoolCore), oneHundredDai);
-
         aaveLendingPool.deposit(address(underlying), oneHundredDai, 0);
-         
         // // GENERATE NFT
         _mint(msg.sender, hodlCount);
         hodlCount = hodlCount.add(1);
@@ -95,7 +93,6 @@ contract ClassicHodlFactory is ERC721Full {
 
     function withdrawInterest(uint _hodlId) public {
         uint _interestToWithdraw = getInterestAvailableToWithdraw(_hodlId);
-        testingVariableA = _interestToWithdraw;
         // update variables
         uint _sumOfLastWithdrawTimes = averageTimeLastWithdrawn.mul(hodlCount);
         uint _sumOfLastWithdrawTimesUpdated = _sumOfLastWithdrawTimes.add(now).sub(hodlTracker[_hodlId].interestLastWithdrawnTime);
@@ -113,10 +110,10 @@ contract ClassicHodlFactory is ERC721Full {
         averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlTracker[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
         hodlCount = hodlCount.sub(1);
         // external calls
+        underlying.transfer(ownerOf(_hodlId), oneHundredDai);
         _burn(_hodlId);
         withdrawInterest(_hodlId);
         aToken.redeem(oneHundredDai);
-        underlying.transfer(ownerOf(_hodlId), oneHundredDai);
     }
 
 
