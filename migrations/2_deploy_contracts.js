@@ -1,5 +1,6 @@
 const CashMockup = artifacts.require("CashMockup");
 const aTokenMockup = artifacts.require("aTokenMockup");
+const rTokenMockup = artifacts.require("rTokenMockup");
 const CharityHodlFactory = artifacts.require("CharityHodlFactory");
 const ClassicHodlFactory = artifacts.require("ClassicHodlFactory");
 
@@ -18,12 +19,21 @@ module.exports = function(deployer, network) {
     deployer.deploy(CharityHodlFactory, cashAddressRinkeby,cTokenAddressRinkeby);
   } else if (network === "kovan") {
     deployer.deploy(ClassicHodlFactory, aaveCashAddressKovan, aaveAtokenAddressKovan,aaveLendingPoolAddressKovan,aaveLendingPoolCoreAddressKovan);
-    deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
+    // deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
   } else {
+    //classic
     deployer.deploy(CashMockup).then((deployedCash) => {
       return deployer.deploy(aTokenMockup, deployedCash.address).then((deployedaToken) => {
         return deployer.deploy(ClassicHodlFactory, deployedCash.address, deployedaToken.address, deployedaToken.address, deployedaToken.address);
        });
      });
+
+     //charity
+     deployer.deploy(CashMockup).then((deployedCash) => {
+      return deployer.deploy(rTokenMockup, deployedCash.address).then((deployedrToken) => {
+        return deployer.deploy(CharityHodlFactory, deployedCash.address, deployedrToken.address);
+       });
+     });
+
   }
 };

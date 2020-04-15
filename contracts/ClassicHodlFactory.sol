@@ -56,22 +56,28 @@ contract ClassicHodlFactory is ERC721Full {
         uint interestLastWithdrawnTime;
     }
 
-    mapping (uint => hodl) public hodlTracker; 
+    mapping (uint => hodl) public hodlProperties; 
+    mapping (address => uint[]) hodlOwnerTracker;
 
     event stfu(uint indexed stfu);
 
     function getHodlPurchaseTime(uint _hodlId) external view returns (uint) {
-        return hodlTracker[_hodlId].purchaseTime;
+        return hodlProperties[_hodlId].purchaseTime;
     }
 
     function getAdaiBalance() public view returns (uint) {
         return(aToken.balanceOf(address(this)));
     }
 
+    function getHodlsOwned() public view returns(uint[] memory) {
+        return(hodlOwnerTracker[msg.sender]);
+    }
+
     function createHodl() public {
         // UPDATE VARIABLES
-        hodlTracker[hodlCount].purchaseTime = now;
-        hodlTracker[hodlCount].interestLastWithdrawnTime = now;
+        hodlOwnerTracker[msg.sender].push(hodlCount);
+        hodlProperties[hodlCount].purchaseTime = now;
+        hodlProperties[hodlCount].interestLastWithdrawnTime = now;
         averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).add(now)).div(hodlCount.add(1));
          // SWAP DAI FOR aDAI
         underlying.mint(oneHundredDai);
@@ -79,14 +85,14 @@ contract ClassicHodlFactory is ERC721Full {
         aaveLendingPool.deposit(address(underlying), oneHundredDai, 0);
         // // GENERATE NFT
         _mint(msg.sender, hodlCount);
-        hodlCount = hodlCount.add(1);
+        hodlCount = hodlCount.add(1);  
     } 
 
     function getInterestAvailableToWithdraw(uint _hodlId) public view returns (uint) {
         uint _totalAdaiBalance = aToken.balanceOf(address(this)); 
         uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
         uint _totalInterestAvailable = _totalAdaiBalance.sub(_totalDaiBalance);
-        uint _numerator = _totalInterestAvailable.mul(now.sub(hodlTracker[_hodlId].interestLastWithdrawnTime));
+        uint _numerator = _totalInterestAvailable.mul(now.sub(hodlProperties[_hodlId].interestLastWithdrawnTime));
         uint _denominator = (now.sub(averageTimeLastWithdrawn)).mul(hodlCount);
         return (_numerator.div(_denominator));
     }
@@ -95,9 +101,9 @@ contract ClassicHodlFactory is ERC721Full {
         uint _interestToWithdraw = getInterestAvailableToWithdraw(_hodlId);
         // update variables
         uint _sumOfLastWithdrawTimes = averageTimeLastWithdrawn.mul(hodlCount);
-        uint _sumOfLastWithdrawTimesUpdated = _sumOfLastWithdrawTimes.add(now).sub(hodlTracker[_hodlId].interestLastWithdrawnTime);
+        uint _sumOfLastWithdrawTimesUpdated = _sumOfLastWithdrawTimes.add(now).sub(hodlProperties[_hodlId].interestLastWithdrawnTime);
         averageTimeLastWithdrawn = _sumOfLastWithdrawTimesUpdated.div(hodlCount);
-        hodlTracker[_hodlId].interestLastWithdrawnTime = now;
+        hodlProperties[_hodlId].interestLastWithdrawnTime = now;
         // external calls
         aToken.redeem(_interestToWithdraw);
         underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
@@ -105,11 +111,11 @@ contract ClassicHodlFactory is ERC721Full {
 
     function destroyHodl(uint _hodlId) public {
         require (ownerOf(_hodlId) == msg.sender, "Not owner");
-        // require (hodlTracker[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
+        // require (hodlProperties[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
         withdrawInterest(_hodlId);
         // update averageTimeLastWithdrawn
         if (hodlCount > 1) {
-            averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlTracker[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
+            averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlProperties[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
         } else {
             averageTimeLastWithdrawn = 0;
         }

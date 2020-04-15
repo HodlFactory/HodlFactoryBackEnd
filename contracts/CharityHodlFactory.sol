@@ -49,7 +49,8 @@ contract CharityHodlFactory is ERC721Full {
         address interestRecipient;
     }
 
-    mapping (uint => hodl) public hodlTracker; 
+    mapping (uint => hodl) public hodlProperties; 
+    mapping (address => uint[]) hodlOwnerTracker;
 
     event stfu(uint indexed stfu);
 
@@ -58,13 +59,14 @@ contract CharityHodlFactory is ERC721Full {
     }
 
     function getHodlPurchaseTime(uint _hodlId) external view returns (uint) {
-        return hodlTracker[_hodlId].purchaseTime;
+        return hodlProperties[_hodlId].purchaseTime;
     }
 
     function createHodl() public {
         // UPDATE VARIABLES
-        hodlTracker[hodlCount].purchaseTime = now;
-        hodlTracker[hodlCount].interestLastWithdrawnTime = now;
+        hodlOwnerTracker[msg.sender].push(hodlCount);
+        hodlProperties[hodlCount].purchaseTime = now;
+        hodlProperties[hodlCount].interestLastWithdrawnTime = now;
         averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).add(now)).div(hodlCount.add(1));
         // SWAP DAI FOR rDAI 
         // I need to transfer Dai to the contract seperately, annoyingly 
@@ -79,7 +81,7 @@ contract CharityHodlFactory is ERC721Full {
         uint _totalRdaiBalance = rToken.balanceOf(address(this)) + rToken.interestPayableOf(address(this)); 
         uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
         uint _totalInterestAvailable = _totalRdaiBalance.sub(_totalDaiBalance);
-        uint _numerator = _totalInterestAvailable.mul(now.sub(hodlTracker[_hodlId].interestLastWithdrawnTime));
+        uint _numerator = _totalInterestAvailable.mul(now.sub(hodlProperties[_hodlId].interestLastWithdrawnTime));
         uint _denominator = (now.sub(averageTimeLastWithdrawn)).mul(hodlCount);
         return (_numerator.div(_denominator));
     }
@@ -90,7 +92,7 @@ contract CharityHodlFactory is ERC721Full {
         uint _totalRdaiBalance = rToken.balanceOf(address(this)); 
         uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
         uint _totalInterestAvailable = _totalRdaiBalance.sub(_totalDaiBalance);
-        uint _numerator = _totalInterestAvailable.mul(now.sub(hodlTracker[_hodlId].interestLastWithdrawnTime));
+        uint _numerator = _totalInterestAvailable.mul(now.sub(hodlProperties[_hodlId].interestLastWithdrawnTime));
         uint _denominator = (now.sub(averageTimeLastWithdrawn)).mul(hodlCount);
         return (_numerator.div(_denominator));
     }
@@ -99,9 +101,9 @@ contract CharityHodlFactory is ERC721Full {
         uint _interestToWithdraw = getInterestAvailableToWithdraw(_hodlId);
         // update variables
         uint _sumOfLastWithdrawTimes = averageTimeLastWithdrawn.mul(hodlCount);
-        uint _sumOfLastWithdrawTimesUpdated = _sumOfLastWithdrawTimes.add(now).sub(hodlTracker[_hodlId].interestLastWithdrawnTime);
+        uint _sumOfLastWithdrawTimesUpdated = _sumOfLastWithdrawTimes.add(now).sub(hodlProperties[_hodlId].interestLastWithdrawnTime);
         averageTimeLastWithdrawn = _sumOfLastWithdrawTimesUpdated.div(hodlCount);
-        hodlTracker[_hodlId].interestLastWithdrawnTime = now;
+        hodlProperties[_hodlId].interestLastWithdrawnTime = now;
         // external calls
         assert(rToken.redeem(_interestToWithdraw));
         underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
@@ -109,11 +111,11 @@ contract CharityHodlFactory is ERC721Full {
 
     function destroyHodl(uint _hodlId) public {
         require (ownerOf(_hodlId) == msg.sender, "Not owner");
-        // require (hodlTracker[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
+        // require (hodlProperties[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
         withdrawInterest(_hodlId);
         // update averageTimeLastWithdrawn
         if (hodlCount > 1) {
-            averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlTracker[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
+            averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlProperties[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
         } else {
             averageTimeLastWithdrawn = 0;
         }
