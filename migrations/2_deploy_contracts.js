@@ -15,9 +15,10 @@ const aaveLendingPoolCoreAddressKovan = '0x95D1189Ed88B380E319dF73fF00E479fcc4CF
 module.exports = function(deployer, network) {
 
   if (network === "rinkeby") {
-    deployer.deploy(ClassicHodlFactory, cashAddressRinkeby,cTokenAddressRinkeby);
+    deployer.deploy(CharityHodlFactory, cashAddressRinkeby,cTokenAddressRinkeby);
   } else if (network === "kovan") {
-    deployer.deploy(ClassicHodlFactory, aaveCashAddressKovan, aaveAtokenAddressKovan,aaveLendingPoolAddressKovan,aaveLendingPoolCoreAddressKovan);
+    // deployer.deploy(ClassicHodlFactory, aaveCashAddressKovan, aaveAtokenAddressKovan,aaveLendingPoolAddressKovan,aaveLendingPoolCoreAddressKovan);
+    deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
   } else {
     deployer.deploy(CashMockup).then((deployedCash) => {
       return deployer.deploy(aTokenMockup, deployedCash.address).then((deployedaToken) => {

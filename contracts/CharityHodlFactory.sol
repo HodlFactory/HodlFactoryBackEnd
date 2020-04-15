@@ -75,7 +75,17 @@ contract CharityHodlFactory is ERC721Full {
         hodlCount = hodlCount.add(1);
     } 
 
-    function getInterestAvailableToWithdraw(uint _hodlId) public view returns (uint) {
+    function getInterestAvailableToWithdrawView(uint _hodlId) public view returns (uint) {
+        uint _totalRdaiBalance = rToken.balanceOf(address(this)) + rToken.interestPayableOf(address(this)); 
+        uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
+        uint _totalInterestAvailable = _totalRdaiBalance.sub(_totalDaiBalance);
+        uint _numerator = _totalInterestAvailable.mul(now.sub(hodlTracker[_hodlId].interestLastWithdrawnTime));
+        uint _denominator = (now.sub(averageTimeLastWithdrawn)).mul(hodlCount);
+        return (_numerator.div(_denominator));
+    }
+
+    function getInterestAvailableToWithdraw(uint _hodlId) public returns (uint) {
+        assert(rToken.payInterest(address(this)));
         uint _totalRdaiBalance = rToken.balanceOf(address(this)); 
         uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
         uint _totalInterestAvailable = _totalRdaiBalance.sub(_totalDaiBalance);
@@ -98,7 +108,7 @@ contract CharityHodlFactory is ERC721Full {
 
     function destroyHodl(uint _hodlId) public {
         require (ownerOf(_hodlId) == msg.sender, "Not owner");
-        require (hodlTracker[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
+        // require (hodlTracker[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
         // update variables
         averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlTracker[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
         hodlCount = hodlCount.sub(1);

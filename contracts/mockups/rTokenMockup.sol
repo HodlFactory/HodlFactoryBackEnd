@@ -21,6 +21,7 @@ contract rTokenMockup
 
     mapping (address => uint) public daiBalances;
     mapping (address => uint) public rTokenBalances;
+    mapping (address => uint) public unallocatedInterest;
     uint constant public oneHundredDai = 10**20;
 
     Cash underlying;
@@ -32,6 +33,11 @@ contract rTokenMockup
     function balanceOf(address _owner) public view returns (uint)
     {
         return rTokenBalances[_owner];
+    }
+
+    function interestPayableOf(address _owner) public view returns (uint)
+    {
+        return unallocatedInterest[_owner];
     }
 
     function mint(uint mintAmount) public returns (bool)
@@ -47,7 +53,14 @@ contract rTokenMockup
         uint _10percent = daiBalances[_owner].div(10);
         underlying.allocateTo(address(this), _10percent);
         daiBalances[_owner] = daiBalances[_owner].add(_10percent);
-        rTokenBalances[_owner] = rTokenBalances[_owner].add(_10percent);
+        unallocatedInterest[_owner] = unallocatedInterest[_owner].add(_10percent);
+    }
+
+    function payInterest(address _owner) public returns (bool)
+    {
+        rTokenBalances[_owner] = rTokenBalances[_owner].add(unallocatedInterest[_owner]);
+        unallocatedInterest[_owner] = 0;
+        return (true);
     }
 
     function redeem(uint redeemAmount) public returns (bool)
@@ -56,6 +69,5 @@ contract rTokenMockup
         underlying.transfer(msg.sender, redeemAmount);
         return (true);
     }
-
 
 }

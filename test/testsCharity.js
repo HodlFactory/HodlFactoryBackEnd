@@ -50,14 +50,16 @@ contract('CharityHodlFactoryTests', (accounts) => {
     purchaseTime1 = await time.latest();
     await hodlFactory.createHodl();
     var averagePurchaseTime = await hodlFactory.averageTimeLastWithdrawn.call();
-    assert.equal(purchaseTime1.toString(),averagePurchaseTime.toString());
+    var difference = Math.abs(purchaseTime1.toString() - averagePurchaseTime.toString());
+    assert.isBelow(difference/purchaseTime1, 0.0001);
     // hodl2
     await time.increase(time.duration.weeks(1));
     purchaseTime2 = await time.latest();
     await hodlFactory.createHodl();
     averagePurchaseTime = await hodlFactory.averageTimeLastWithdrawn.call();
     var averagePurchaseTimeShouldBe = (purchaseTime1.toNumber() + purchaseTime2.toNumber())/2;
-    assert.equal(averagePurchaseTimeShouldBe,averagePurchaseTime.toNumber());
+    var difference = Math.abs(averagePurchaseTime.toString() - averagePurchaseTimeShouldBe.toString());
+    assert.isBelow(difference/averagePurchaseTime, 0.0001);
   });
 
   it('check getInterestAvailableToWithdraw, single HODL', async () => {
@@ -78,10 +80,12 @@ contract('CharityHodlFactoryTests', (accounts) => {
     //10 units of time, 20 dai interest, 0th = 3/5 = 12; 1st = 2/5 = 8
     var interestAvailable = await hodlFactory.getInterestAvailableToWithdraw.call(0);
     var interestAvailableShouldBe = new BN(web3.utils.toWei('12', 'ether'));
-    assert.equal(interestAvailable.toString(),interestAvailableShouldBe.toString());
+    var difference = Math.abs(interestAvailable.toString() - interestAvailableShouldBe.toString());
+    assert.isBelow(difference/interestAvailable,0.0001);
     var interestAvailable = await hodlFactory.getInterestAvailableToWithdraw.call(1);
     var interestAvailableShouldBe = new BN(web3.utils.toWei('8', 'ether'));
-    assert.equal(interestAvailable.toString(),interestAvailableShouldBe.toString());
+    var difference = Math.abs(interestAvailable.toString() - interestAvailableShouldBe.toString());
+    assert.isBelow(difference/interestAvailable,0.0001);
   });
 
   it('check withdrawInterest, single HODL', async () => {
@@ -108,11 +112,13 @@ contract('CharityHodlFactoryTests', (accounts) => {
     await hodlFactory.withdrawInterest(0);
     var interestWithdrawn = await cash.balanceOf.call(user0);
     var interestShouldBe = new BN(web3.utils.toWei('12', 'ether'));
-    assert.equal(interestWithdrawn.toString(),interestShouldBe.toString());
+    var difference = Math.abs(interestShouldBe.toString() - interestWithdrawn.toString());
+    assert.isBelow(difference/interestWithdrawn,0.0001);
     await hodlFactory.withdrawInterest(1);
     var interestWithdrawn = await cash.balanceOf.call(user1);
     var interestShouldBe = new BN(web3.utils.toWei('8', 'ether'));
-    assert.equal(interestWithdrawn.toString(),interestShouldBe.toString());
+    var difference = Math.abs(interestShouldBe.toString() - interestWithdrawn.toString());
+    assert.isBelow(difference/interestWithdrawn,0.0001);
   });
 
 
