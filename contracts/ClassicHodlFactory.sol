@@ -106,16 +106,19 @@ contract ClassicHodlFactory is ERC721Full {
     function destroyHodl(uint _hodlId) public {
         require (ownerOf(_hodlId) == msg.sender, "Not owner");
         // require (hodlTracker[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
-        // update variables
-        averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlTracker[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
-        hodlCount = hodlCount.sub(1);
-        // external calls
-        underlying.transfer(ownerOf(_hodlId), oneHundredDai);
-        _burn(_hodlId);
         withdrawInterest(_hodlId);
+        // update averageTimeLastWithdrawn
+        if (hodlCount > 1) {
+            averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlTracker[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
+        } else {
+            averageTimeLastWithdrawn = 0;
+        }
+        // external calls
         aToken.redeem(oneHundredDai);
+        underlying.transfer(ownerOf(_hodlId), oneHundredDai);
+        // remove HODL
+        hodlCount = hodlCount.sub(1);
+        _burn(_hodlId);
     }
-
-
 
 }

@@ -17,7 +17,7 @@ module.exports = function(deployer, network) {
   if (network === "rinkeby") {
     deployer.deploy(CharityHodlFactory, cashAddressRinkeby,cTokenAddressRinkeby);
   } else if (network === "kovan") {
-    // deployer.deploy(ClassicHodlFactory, aaveCashAddressKovan, aaveAtokenAddressKovan,aaveLendingPoolAddressKovan,aaveLendingPoolCoreAddressKovan);
+    deployer.deploy(ClassicHodlFactory, aaveCashAddressKovan, aaveAtokenAddressKovan,aaveLendingPoolAddressKovan,aaveLendingPoolCoreAddressKovan);
     deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
   } else {
     deployer.deploy(CashMockup).then((deployedCash) => {
