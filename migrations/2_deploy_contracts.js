@@ -3,6 +3,7 @@ const aTokenMockup = artifacts.require("aTokenMockup");
 const rTokenMockup = artifacts.require("rTokenMockup");
 const CharityHodlFactory = artifacts.require("CharityHodlFactory");
 const ClassicHodlFactory = artifacts.require("ClassicHodlFactory");
+const ClassicHodlFactory = artifacts.require("ClassicHodlFactory");
 
 const cashAddressRinkeby = '0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa';
 const cTokenAddressRinkeby = '0x6D7F0754FFeb405d23C51CE938289d4835bE3b14';
@@ -18,8 +19,10 @@ module.exports = function(deployer, network) {
   if (network === "rinkeby") {
     deployer.deploy(CharityHodlFactory, cashAddressRinkeby,cTokenAddressRinkeby);
   } else if (network === "kovan") {
+    //classic
     deployer.deploy(ClassicHodlFactory, aaveCashAddressKovan, aaveAtokenAddressKovan,aaveLendingPoolAddressKovan,aaveLendingPoolCoreAddressKovan);
-    // deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
+    //charity
+    deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
   } else {
     //classic
     deployer.deploy(CashMockup).then((deployedCash) => {
@@ -34,6 +37,14 @@ module.exports = function(deployer, network) {
         return deployer.deploy(CharityHodlFactory, deployedCash.address, deployedrToken.address);
        });
      });
+
+     //classic
+     deployer.deploy(CashMockup).then((deployedCash) => {
+      return deployer.deploy(aTokenMockup, deployedCash.address).then((deployedaToken) => {
+        return deployer.deploy(PonziHodlFactory, deployedCash.address, deployedaToken.address, deployedaToken.address, deployedaToken.address);
+       });
+     });
+
 
   }
 };

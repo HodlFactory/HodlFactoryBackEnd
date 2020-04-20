@@ -106,6 +106,14 @@ contract PonziHodlFactory is ERC721Full {
         }
     }
 
+    function getPlayersMyTierOrBelow(uint _hodlId) public view returns (uint) {
+        uint _tier = hodlProperties[_hodlId].tier;
+        uint _playerCount;
+        for (uint i = 0; i <= _tier; i++) {
+            _playerCount = _playerCount.add(tierProperties[tierCount].hodlsInTier);
+        }
+    }
+
     function createHodl() public {
         // UPDATE VARIABLES
         hodlOwnerTracker[msg.sender].push(hodlCount);
@@ -122,7 +130,7 @@ contract PonziHodlFactory is ERC721Full {
         hodlCount = hodlCount.add(1);  
     } 
 
-    function getTierInterestAvailableToWithdraw(uint _tierId) public view returns (uint) {
+    function getTierInterestAccrued(uint _tierId) public view returns (uint) {
         uint _totalAdaiBalance = aToken.balanceOf(address(this)); 
         uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
         uint _totalInterestAvailable = _totalAdaiBalance.sub(_totalDaiBalance);
@@ -133,34 +141,58 @@ contract PonziHodlFactory is ERC721Full {
         return ((_numerator.div(_denominator)).sub(_interestAlreadyWithdrawn));
     }
 
-    // function withdrawInterest(uint _hodlId) public {
-    //     uint _interestToWithdraw = getInterestAvailableToWithdraw(_hodlId);
-    //     // update variables
-    //     uint _sumOfLastWithdrawTimes = averageTimeLastWithdrawn.mul(hodlCount);
-    //     uint _sumOfLastWithdrawTimesUpdated = _sumOfLastWithdrawTimes.add(now).sub(hodlProperties[_hodlId].interestLastWithdrawnTime);
-    //     averageTimeLastWithdrawn = _sumOfLastWithdrawTimesUpdated.div(hodlCount);
-    //     hodlProperties[_hodlId].interestLastWithdrawnTime = now;
-    //     // external calls
-    //     aToken.redeem(_interestToWithdraw);
-    //     underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
-    // }
+    function getInterestAvailableToWithdrawView(uint _hodlId) public view returns (uint) {
+        uint _interestToWithdraw;
+        uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
+        uint _tier = hodlProperties[_hodlId].tier;
+        for (uint i = _tier.add(1); i <= tierCount; i++) {
+            uint _tierInterestAccrued = getTierInterestAccrued(i);
+            uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
+            _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
+            _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
+        }
+        return _interestToWithdraw;
+    }
 
-    // function destroyHodl(uint _hodlId) public {
-    //     require (ownerOf(_hodlId) == msg.sender, "Not owner");
-    //     // require (hodlProperties[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
-    //     withdrawInterest(_hodlId);
-    //     // update averageTimeLastWithdrawn
-    //     if (hodlCount > 1) {
-    //         averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).sub(hodlProperties[_hodlId].interestLastWithdrawnTime)).div(hodlCount.sub(1));
-    //     } else {
-    //         averageTimeLastWithdrawn = 0;
-    //     }
-    //     // external calls
-    //     aToken.redeem(oneHundredDai);
-    //     underlying.transfer(ownerOf(_hodlId), oneHundredDai);
-    //     // remove HODL
-    //     hodlCount = hodlCount.sub(1);
-    //     _burn(_hodlId);
-    // }
+    function getInterestAvailableToWithdraw(uint _hodlId) public returns (uint) {
+        uint _interestToWithdraw;
+        uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
+        uint _tier = hodlProperties[_hodlId].tier;
+        for (uint i = _tier.add(1); i <= tierCount; i++) {
+            uint _tierInterestAccrued = getTierInterestAccrued(i);
+            uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
+            _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
+            _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
+            tierProperties[i].interestAlreadyWithdrawn = tierProperties[i].interestAlreadyWithdrawn.add(_interestToWithdrawFromThisTier);
+        }
+        return _interestToWithdraw;
+    }
+
+    function _withdrawInterest(uint _hodlId) internal {
+        uint _interestToWithdraw = getInterestAvailableToWithdraw(_hodlId);
+        aToken.redeem(_interestToWithdraw);
+        underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
+    } 
+
+    function destroyHodl(uint _hodlId) public {
+        require (ownerOf(_hodlId) == msg.sender, "Not owner");
+        _withdrawInterest(_hodlId);
+        // remove HODL from tier
+        uint _tier = hodlProperties[_hodlId].tier;
+        uint _hodlsInTier = tierProperties[_tier].hodlsInTier;
+        uint _tierAveragePurchaseTime = tierProperties[_tier].averagePurchaseTime;
+        if (_hodlsInTier > 1) {
+            tierProperties[_tier].averagePurchaseTime = ((_tierAveragePurchaseTime.mul(_hodlsInTier)).sub(hodlProperties[_hodlId].purchaseTime)).div(_hodlsInTier.sub(1));
+        } else {
+            tierProperties[_tier].averagePurchaseTime = 0;
+        }
+        tierProperties[_tier].hodlsInTier = tierProperties[_tier].hodlsInTier.sub(1);
+        // external calls
+        aToken.redeem(oneHundredDai);
+        underlying.transfer(ownerOf(_hodlId), oneHundredDai);
+        // remove HODL
+        hodlCount = hodlCount.sub(1);
+        _burn(_hodlId);
+    }
 
 }
