@@ -54,6 +54,7 @@ contract ClassicHodlFactory is ERC721Full {
      struct hodl {
         uint purchaseTime;
         uint interestLastWithdrawnTime;
+        string name;
     }
 
     mapping (uint => hodl) public hodlProperties; 
@@ -65,6 +66,10 @@ contract ClassicHodlFactory is ERC721Full {
         return hodlProperties[_hodlId].purchaseTime;
     }
 
+    function getHodlName(uint _hodlId) external view returns (uint) {
+        return hodlProperties[_hodlId].purchaseTime;
+    }
+
     function getAdaiBalance() public view returns (uint) {
         return(aToken.balanceOf(address(this)));
     }
@@ -73,11 +78,12 @@ contract ClassicHodlFactory is ERC721Full {
         return(hodlOwnerTracker[msg.sender]);
     }
 
-    function createHodl() public {
+    function createHodl(string memory _name) public {
         // UPDATE VARIABLES
         hodlOwnerTracker[msg.sender].push(hodlCount);
         hodlProperties[hodlCount].purchaseTime = now;
         hodlProperties[hodlCount].interestLastWithdrawnTime = now;
+        hodlProperties[hodlCount].name = _name;
         averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).add(now)).div(hodlCount.add(1));
          // SWAP DAI FOR aDAI
         underlying.mint(oneHundredDai);

@@ -3,7 +3,7 @@ const aTokenMockup = artifacts.require("aTokenMockup");
 const rTokenMockup = artifacts.require("rTokenMockup");
 const CharityHodlFactory = artifacts.require("CharityHodlFactory");
 const ClassicHodlFactory = artifacts.require("ClassicHodlFactory");
-const ClassicHodlFactory = artifacts.require("ClassicHodlFactory");
+const PonziHodlFactory = artifacts.require("PonziHodlFactory");
 
 const cashAddressRinkeby = '0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa';
 const cTokenAddressRinkeby = '0x6D7F0754FFeb405d23C51CE938289d4835bE3b14';

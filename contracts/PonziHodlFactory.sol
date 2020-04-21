@@ -61,21 +61,15 @@ contract PonziHodlFactory is ERC721Full {
     }
 
     struct tier {
+        uint size;
+        uint hodlsInTier;
         uint averagePurchaseTime;
         uint interestAlreadyWithdrawn;
-        uint hodlsInTier;
-        uint size;
     }
 
     mapping (uint => hodl) public hodlProperties; 
     mapping (uint => tier) public tierProperties; 
     mapping (address => uint[]) hodlOwnerTracker;
-
-    event stfu(uint indexed stfu);
-
-    function getHodlPurchaseTime(uint _hodlId) external view returns (uint) {
-        return hodlProperties[_hodlId].purchaseTime;
-    }
 
     function getAdaiBalance() public view returns (uint) {
         return(aToken.balanceOf(address(this)));
