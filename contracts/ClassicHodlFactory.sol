@@ -66,8 +66,8 @@ contract ClassicHodlFactory is ERC721Full {
         return hodlProperties[_hodlId].purchaseTime;
     }
 
-    function getHodlName(uint _hodlId) external view returns (uint) {
-        return hodlProperties[_hodlId].purchaseTime;
+    function getHodlName(uint _hodlId) external view returns (string memory) {
+        return hodlProperties[_hodlId].name;
     }
 
     function getAdaiBalance() public view returns (uint) {
