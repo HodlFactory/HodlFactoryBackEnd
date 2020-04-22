@@ -60,7 +60,7 @@ contract ClassicHodlFactory is ERC721Full {
     mapping (uint => hodl) public hodlProperties; 
     mapping (address => uint[]) hodlOwnerTracker;
 
-    event stfu(uint indexed stfu);
+    // event stfu(uint indexed stfu);
 
     function getHodlPurchaseTime(uint _hodlId) external view returns (uint) {
         return hodlProperties[_hodlId].purchaseTime;

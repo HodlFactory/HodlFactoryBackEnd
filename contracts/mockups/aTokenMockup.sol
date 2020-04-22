@@ -33,6 +33,8 @@ contract aTokenMockup
 
     function deposit(address stfu, uint mintAmount, uint16 gtfo) public
     {
+        stfu;
+        gtfo;
         underlying.transferFrom(msg.sender, address(this), mintAmount);
         daiBalances[msg.sender] = daiBalances[msg.sender].add(mintAmount);
         aTokenBalances[msg.sender] = aTokenBalances[msg.sender].add(mintAmount);

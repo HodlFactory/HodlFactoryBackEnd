@@ -104,8 +104,9 @@ contract PonziHodlFactory is ERC721Full {
         uint _tier = hodlProperties[_hodlId].tier;
         uint _playerCount;
         for (uint i = 0; i <= _tier; i++) {
-            _playerCount = _playerCount.add(tierProperties[tierCount].hodlsInTier);
+            _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
         }
+        return _playerCount;
     }
 
     function createHodl() public {
@@ -135,12 +136,16 @@ contract PonziHodlFactory is ERC721Full {
         return ((_numerator.div(_denominator)).sub(_interestAlreadyWithdrawn));
     }
 
-    function getInterestAvailableToWithdrawView(uint _hodlId) public view returns (uint) {
+
+    // change back to view
+    function getInterestAvailableToWithdrawView(uint _hodlId) public returns (uint) {
         uint _interestToWithdraw;
         uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
         uint _tier = hodlProperties[_hodlId].tier;
         for (uint i = _tier.add(1); i <= tierCount; i++) {
+            // require(false,"STFU");
             uint _tierInterestAccrued = getTierInterestAccrued(i);
+            testingVariableA = _tierInterestAccrued;
             uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
             _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);

@@ -45,6 +45,26 @@ contract('PonziHodlFactoryTests', (accounts) => {
     assert.equal(user, hodlOwner);
   });
 
+  it('check players my tier or below', async () => {
+    //ten hodls
+    var i;
+    for (i = 0; i < 10; i++) {
+      await hodlFactory.createHodl();
+    }
+    // check no players my tier or below
+    var playersEqualOrBelow = await hodlFactory.getPlayersMyTierOrBelow.call(0);
+    assert.equal(playersEqualOrBelow.toString(),10);
+    // new tier
+    for (i = 0; i < 6; i++) {
+      await hodlFactory.createHodl();
+    }
+    var playersEqualOrBelow = await hodlFactory.getPlayersMyTierOrBelow.call(5);
+    assert.equal(playersEqualOrBelow.toString(),10);
+    var playersEqualOrBelow = await hodlFactory.getPlayersMyTierOrBelow.call(12);
+    assert.equal(playersEqualOrBelow.toString(),16);
+  });
+
+  // //this one takes ages
   // it('create lots of Hodls, check tiers', async () => {
   //   var i;
   //   for (i = 0; i < 10; i++) {
@@ -94,20 +114,53 @@ contract('PonziHodlFactoryTests', (accounts) => {
     assert.isBelow(difference/averagePurchaseTime, 0.0001);
   });
 
-  it('check players above', async () => {
+ it('check getTierInterestAccrued', async () => {
     //ten hodls
     var i;
     for (i = 0; i < 10; i++) {
       await hodlFactory.createHodl();
     }
-    // check no players above
-    var playersAbove = await hodlFactory.getPlayersMyTierOrBelow.call(0);
-    assert.equal(playersAbove.toString(),0);
-    for (i = 0; i < 6; i++) {
+    await aToken.generate10PercentInterest(hodlFactory.address);
+    await time.increase(time.duration.days(1));
+    // check 100 dai interest tier 1
+    var interestAvailable = await hodlFactory.getTierInterestAccrued.call(0);
+    assert.equal(interestAvailable.toString(),web3.utils.toWei('100', 'ether'));
+    // another round
+    for (i = 0; i < 11; i++) {
       await hodlFactory.createHodl();
     }
-    var playersAbove = await hodlFactory.getPlayersMyTierOrBelow.call(0);
-    assert.equal(playersAbove.toString(),6);
+    await time.increase(time.duration.days(1));
+    // now have 21 hodls, still 100 dai interest. it should be split 2 thirds for first tier, 1 third for second.
+    var interestAvailable = await hodlFactory.getTierInterestAccrued.call(0);
+    var interestAvailableShouldBe = (web3.utils.toWei('100', 'ether')/31)*20;
+    var difference = Math.abs(interestAvailable-interestAvailableShouldBe);
+    assert.isBelow(difference/interestAvailable,0.0001)
+    var interestAvailable = await hodlFactory.getTierInterestAccrued.call(1);
+    var interestAvailableShouldBe = (web3.utils.toWei('100', 'ether')/31)*11;
+    var difference = Math.abs(interestAvailable-interestAvailableShouldBe);
+    assert.isBelow(difference/interestAvailable,0.0001);
+    // check interest for hodl that does not exist is 0
+    var interestAvailable = await hodlFactory.getTierInterestAccrued.call(2);
+    assert.equal(interestAvailable,0);
+    // pritnt 5 more for third tier. 
+    for (i = 0; i < 5; i++) {
+      await hodlFactory.createHodl();
+    }
+    await time.increase(time.duration.days(1));
+    var interestAvailable = await hodlFactory.getTierInterestAccrued.call(0);
+    var interestAvailableShouldBe = (web3.utils.toWei('100', 'ether')/57)*30;
+    var difference = Math.abs(interestAvailable-interestAvailableShouldBe);
+    assert.isBelow(difference/interestAvailable,0.0001);
+    var interestAvailable = await hodlFactory.getTierInterestAccrued.call(1);
+    var interestAvailableShouldBe = (web3.utils.toWei('100', 'ether')/57)*22;
+    var difference = Math.abs(interestAvailable-interestAvailableShouldBe);
+    assert.isBelow(difference/interestAvailable,0.0001);
+    var interestAvailable = await hodlFactory.getTierInterestAccrued.call(2);
+    var interestAvailableShouldBe = (web3.utils.toWei('100', 'ether')/57)*5;
+    var difference = Math.abs(interestAvailable-interestAvailableShouldBe);
+    assert.isBelow(difference/interestAvailable,0.0001)
+
+
   });
 
   // it('check getInterestAvailableToWithdraw', async () => {
@@ -118,19 +171,18 @@ contract('PonziHodlFactoryTests', (accounts) => {
   //   }
   //   await aToken.generate10PercentInterest(hodlFactory.address);
   //   await time.increase(time.duration.days(1)); // to avoid multiply by zero when doing now - purchase time
-  //   // check no players above
-  //   var playersAbove = await hodlFactory.getPlayersMyTierOrBelow.call(0);
-  //   assert.equal(playersAbove.toString(),0);
   //   // check zero interest
   //   var interestAvailable = await hodlFactory.getInterestAvailableToWithdrawView.call(0);
   //   assert.equal(interestAvailable.toString(),0);
 
-  //   // for (i = 0; i < 10; i++) {
-  //   //   await hodlFactory.createHodl();
-  //   // }
-  //   // await time.increase(time.duration.days(1)); // to avoid multiply by zero when doing now - purchase time
-  //   // var interestAvailable = await hodlFactory.getInterestAvailableToWithdrawView.call(0);
-  //   // assert.equal(interestAvailable.toString(),0);
+  //   for (i = 0; i < 10; i++) {
+  //     await hodlFactory.createHodl();
+  //   }
+  //   await time.increase(time.duration.days(1)); // to avoid multiply by zero when doing now - purchase time
+  //   var interestAvailable = await hodlFactory.getInterestAvailableToWithdrawView.call(0);
+  //   var testing = await hodlFactory.testingVariableA.call();
+  //   console.log(testing);
+  //   assert.equal(interestAvailable.toString(),0);
   // });
 
   // it('check getInterestAvailableToWithdraw, two HODLs', async () => {

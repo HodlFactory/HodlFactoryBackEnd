@@ -22,7 +22,7 @@ module.exports = function(deployer, network) {
     //classic
     deployer.deploy(ClassicHodlFactory, aaveCashAddressKovan, aaveAtokenAddressKovan,aaveLendingPoolAddressKovan,aaveLendingPoolCoreAddressKovan);
     //charity
-    deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
+    // deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
   } else {
     //classic
     deployer.deploy(CashMockup).then((deployedCash) => {
@@ -44,7 +44,6 @@ module.exports = function(deployer, network) {
         return deployer.deploy(PonziHodlFactory, deployedCash.address, deployedaToken.address, deployedaToken.address, deployedaToken.address);
        });
      });
-
 
   }
 };
