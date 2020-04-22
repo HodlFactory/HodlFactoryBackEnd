@@ -71,6 +71,11 @@ contract PonziHodlFactory is ERC721Full {
     mapping (uint => tier) public tierProperties; 
     mapping (address => uint[]) hodlOwnerTracker;
 
+    modifier hodlExists(uint _hodlId) {
+        require(ownerOf(_hodlId) != address(0), "Hodl does not exist");
+        _;
+    }
+
     function getAdaiBalance() public view returns (uint) {
         return(aToken.balanceOf(address(this)));
     }
@@ -86,7 +91,7 @@ contract PonziHodlFactory is ERC721Full {
         tierProperties[tierCount].size = _newSize;
     }
 
-    function addToTier(uint _hodlId) public {
+    function _addToTier(uint _hodlId) internal {
         //add to existing tier
         uint _hodlsInTier = tierProperties[tierCount].hodlsInTier;
         uint _sizeOfTier = tierProperties[tierCount].size;
@@ -96,7 +101,7 @@ contract PonziHodlFactory is ERC721Full {
             tierProperties[tierCount].averagePurchaseTime = ((_tierAveragePurchaseTime.mul(_hodlsInTier)).add(now)).div(_hodlsInTier.add(1));
         } else {
             _createNewTier();
-            addToTier(_hodlId);
+            _addToTier(_hodlId);
         }
     }
 
@@ -111,11 +116,11 @@ contract PonziHodlFactory is ERC721Full {
 
     function createHodl() public {
         // UPDATE VARIABLES
+        _addToTier(hodlCount);
         hodlOwnerTracker[msg.sender].push(hodlCount);
         hodlProperties[hodlCount].purchaseTime = now;
         hodlProperties[hodlCount].tier = tierCount;
         averagePurchaseTime = ((averagePurchaseTime.mul(hodlCount)).add(now)).div(hodlCount.add(1));
-        addToTier(hodlCount);
         // SWAP DAI FOR aDAI
         underlying.mint(oneHundredDai);
         underlying.approve(address(aaveLendingPoolCore), oneHundredDai);
@@ -136,24 +141,33 @@ contract PonziHodlFactory is ERC721Full {
         return ((_numerator.div(_denominator)).sub(_interestAlreadyWithdrawn));
     }
 
-
     // change back to view
-    function getInterestAvailableToWithdrawView(uint _hodlId) public returns (uint) {
+    function getInterestAvailableToWithdrawView(uint _hodlId) public view hodlExists(_hodlId) returns (uint) {
         uint _interestToWithdraw;
         uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
         uint _tier = hodlProperties[_hodlId].tier;
-        for (uint i = _tier.add(1); i <= tierCount; i++) {
+        // testingVariableA = _tier;
+        // tier 0 gets their own interest, any other tier, you do not get your own
+        if (_tier != 0) {
+            _tier = _tier.add(1);
+        }
+        for (uint i = _tier; i <= tierCount; i++) {
             // require(false,"STFU");
             uint _tierInterestAccrued = getTierInterestAccrued(i);
-            testingVariableA = _tierInterestAccrued;
+            // testingVariableA = _tierInterestAccrued;
             uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
-            _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
+            if (i != 0) {
+                // otherwise double counting tier 0 players
+                _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
+            }
+
         }
         return _interestToWithdraw;
     }
 
-    function getInterestAvailableToWithdraw(uint _hodlId) public returns (uint) {
+    // do a copy of the above
+    function getInterestAvailableToWithdraw(uint _hodlId) public hodlExists(_hodlId) returns (uint) {
         uint _interestToWithdraw;
         uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
         uint _tier = hodlProperties[_hodlId].tier;
@@ -162,7 +176,7 @@ contract PonziHodlFactory is ERC721Full {
             uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
             _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
-            tierProperties[i].interestAlreadyWithdrawn = tierProperties[i].interestAlreadyWithdrawn.add(_interestToWithdrawFromThisTier);
+            tierProperties[i].interestAlreadyWithdrawn = tierProperties[i].interestAlreadyWithdrawn.add(_interestToWithdrawFromThisTier); // <- only new line from View version
         }
         return _interestToWithdraw;
     }
