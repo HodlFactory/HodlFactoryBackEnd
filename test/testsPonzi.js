@@ -262,59 +262,28 @@ contract('PonziHodlFactoryTests', (accounts) => {
       await hodlFactory.createHodl();
     }
     await aToken.generate10PercentInterest(hodlFactory.address);
-
-    var interestAvailable = await hodlFactory.getTierInterestAccrued(0);
-    var f = await hodlFactory.testingVariableF.call();
-    console.log('now: ', f);
-
-
     await time.increase(time.duration.days(1));
-
     // check 10 dai interest each
-    // var interestAvailableTier0 = await hodlFactory.getTierInterestAccrued.call(0);
-    // assert.equal(interestAvailableTier0.toString(),web3.utils.toWei('100', 'ether'));
+    var interestAvailableTier0 = await hodlFactory.getTierInterestAccrued.call(0);
+    assert.equal(interestAvailableTier0.toString(),web3.utils.toWei('100', 'ether'));
     await hodlFactory.destroyHodl(0);
-    // var interestAvailableTier0 = await hodlFactory.getTierInterestAccrued.call(0);
-    // assert.equal(interestAvailableTier0.toString(),web3.utils.toWei('90', 'ether'));
-    await hodlFactory.destroyHodl(3);
-    // var interestAvailableTier0 = await hodlFactory.getTierInterestAccrued.call(0);
-    // var interestAvailableTier0ShouldBe = web3.utils.toWei('80', 'ether');
-    // var difference = Math.abs(interestAvailableTier0 - interestAvailableTier0ShouldBe);
-    // assert.isBelow(difference/interestAvailableTier0, 0.0001);
+    var interestAvailableTier0 = await hodlFactory.getTierInterestAccrued.call(0);
+    assert.equal(interestAvailableTier0.toString(),web3.utils.toWei('90', 'ether'));
+    await hodlFactory.destroyHodl(9);
+    var interestAvailableTier0 = await hodlFactory.getTierInterestAccrued.call(0);
+    var interestAvailableTier0ShouldBe = web3.utils.toWei('80', 'ether');
+    var difference = Math.abs(interestAvailableTier0 - interestAvailableTier0ShouldBe);
+    assert.isBelow(difference/interestAvailableTier0, 0.0001);
     // another round
-    var tierProperties = await hodlFactory.tierProperties.call(0);
-    console.log('tier 0 average time is ', tierProperties[2]);
-
-    for (i = 0; i < 1; i++) {
+    for (i = 0; i < 11; i++) {
       await hodlFactory.createHodl();
     }
-
-    var tierProperties = await hodlFactory.tierProperties.call(0);
-    console.log('tier 0 average time is ', tierProperties[2]);
-    
     await time.increase(time.duration.days(1));
 
-    var interestAvailable = await hodlFactory.getTierInterestAccrued(0);
-
-    var a = await hodlFactory.testingVariableA.call();
-    var b = await hodlFactory.testingVariableB.call();
-    var c = await hodlFactory.testingVariableC.call();
-    var d = await hodlFactory.testingVariableD.call();
-    var e = await hodlFactory.testingVariableE.call();
-    var f = await hodlFactory.testingVariableF.call();
-
-    // console.log(a);
-    console.log('numerator: ', b);
-    console.log('denominator: ', c);
-    console.log('tier average purchase time: ',d);
-    console.log('average purchase time: ',e);
-    // console.log(f);
-
-
-
-    // var interestAvailableShouldBe = (web3.utils.toWei('80', 'ether')/27)*16;
-    // var difference = Math.abs(interestAvailable-interestAvailableShouldBe);
-    // assert.isBelow(difference/interestAvailable,0.0001);
+    var interestAvailable = await hodlFactory.getTierInterestAccrued.call(1);
+    var interestAvailableShouldBe = (web3.utils.toWei('80', 'ether')/27)*16;
+    var difference = Math.abs(interestAvailable-interestAvailableShouldBe);
+    assert.isBelow(difference/interestAvailable,0.0001);
 
     // await hodlFactory.destroyHodl(5);
     // var interestWithdrawn = await cash.balanceOf.call(user);

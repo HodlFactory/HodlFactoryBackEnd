@@ -56,7 +56,6 @@ contract PonziHodlFactory is ERC721Full {
     uint public testingVariableC = 0;
     uint public testingVariableD = 0;
     uint public testingVariableE = 0;
-    uint public testingVariableF = 0;
 
     struct hodl {
         uint purchaseTime;
@@ -65,8 +64,7 @@ contract PonziHodlFactory is ERC721Full {
 
     struct tier {
         uint size;
-        uint hodlsAddedToTier;
-        uint hodlsRemovedFromTier;
+        uint hodlsInTier;
         uint averagePurchaseTime;
         uint interestAlreadyWithdrawn;
     }
@@ -97,13 +95,11 @@ contract PonziHodlFactory is ERC721Full {
 
     function _addToTier(uint _hodlId) internal {
         //add to existing tier
-        uint _hodlsAddedToTier = tierProperties[tierCount].hodlsAddedToTier;
-        uint _hodlsRemovedFromTier = tierProperties[tierCount].hodlsRemovedFromTier;
-        uint _hodlsInTier = _hodlsAddedToTier.sub(_hodlsRemovedFromTier);
+        uint _hodlsInTier = tierProperties[tierCount].hodlsInTier;
         uint _sizeOfTier = tierProperties[tierCount].size;
         uint _tierAveragePurchaseTime = tierProperties[tierCount].averagePurchaseTime;
-        if (_hodlsAddedToTier < _sizeOfTier) {
-            tierProperties[tierCount].hodlsAddedToTier = _hodlsAddedToTier.add(1);
+        if (_hodlsInTier < _sizeOfTier) {
+            tierProperties[tierCount].hodlsInTier = _hodlsInTier.add(1);
             tierProperties[tierCount].averagePurchaseTime = ((_tierAveragePurchaseTime.mul(_hodlsInTier)).add(now)).div(_hodlsInTier.add(1));
         } else {
             _createNewTier();
@@ -115,7 +111,7 @@ contract PonziHodlFactory is ERC721Full {
         uint _tier = hodlProperties[_hodlId].tier;
         uint _playerCount;
         for (uint i = 0; i <= _tier; i++) {
-            _playerCount = _playerCount.add(tierProperties[i].hodlsAddedToTier);
+            _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
         }
         return _playerCount;
     }
@@ -137,28 +133,18 @@ contract PonziHodlFactory is ERC721Full {
         latestHodlId = latestHodlId.add(1); 
     } 
 
-    //change to view
-    function getTierInterestAccrued(uint _tierId) public returns (uint) {
+    function getTierInterestAccrued(uint _tierId) public view returns (uint) {
         uint _totalAdaiBalance = aToken.balanceOf(address(this)); 
         uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
         uint _totalInterestAvailable = (_totalAdaiBalance.sub(_totalDaiBalance)).add(totalInterestWithdrawn);
-        uint _hodlsAddedToTier = tierProperties[_tierId].hodlsAddedToTier;
+        uint _hodlsInTier = tierProperties[_tierId].hodlsInTier;
         uint _interestAlreadyWithdrawn = tierProperties[_tierId].interestAlreadyWithdrawn;
-        _totalInterestAvailable = _totalInterestAvailable.sub(_interestAlreadyWithdrawn);
-        uint _numerator = now.sub(tierProperties[_tierId].averagePurchaseTime).mul(_hodlsAddedToTier);
+        uint _numerator = _totalInterestAvailable.mul(now.sub(tierProperties[_tierId].averagePurchaseTime)).mul(_hodlsInTier);
         uint _denominator = (now.sub(averagePurchaseTime)).mul(hodlCount);
-        testingVariableA = _totalInterestAvailable;
-        testingVariableB = _numerator;
-        testingVariableC = _denominator;
-        testingVariableD = tierProperties[_tierId].averagePurchaseTime;
-        testingVariableE = averagePurchaseTime;
-        testingVariableF = now;
-
-        return (_totalInterestAvailable.mul(_numerator.div(_denominator)));
+        return ((_numerator.div(_denominator)).sub(_interestAlreadyWithdrawn));
     }
-    
-    // change to view
-    function getInterestAvailableToWithdrawView(uint _hodlId) public hodlExists(_hodlId) returns (uint) {
+
+    function getInterestAvailableToWithdrawView(uint _hodlId) public view hodlExists(_hodlId) returns (uint) {
         uint _interestToWithdraw;
         uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
         uint _tier = hodlProperties[_hodlId].tier;
@@ -172,7 +158,7 @@ contract PonziHodlFactory is ERC721Full {
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
             if (i != 0) {
                 // otherwise double counting tier 0 players
-                _playerCount = _playerCount.add(tierProperties[i].hodlsAddedToTier);
+                _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
             }
         }
         return _interestToWithdraw;
@@ -197,7 +183,7 @@ contract PonziHodlFactory is ERC721Full {
             tierProperties[i].interestAlreadyWithdrawn = tierProperties[i].interestAlreadyWithdrawn.add(_interestToWithdrawFromThisTier); // <- only new line from View version
             if (i != 0) {
                 // otherwise double counting tier 0 players
-                _playerCount = _playerCount.add(tierProperties[i].hodlsAddedToTier);
+                _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
             }
         }
         return _interestToWithdraw;
@@ -215,14 +201,14 @@ contract PonziHodlFactory is ERC721Full {
         _withdrawInterest(_hodlId);
         // remove HODL from tier
         uint _tier = hodlProperties[_hodlId].tier;
-        uint _hodlsAddedToTier = tierProperties[_tier].hodlsAddedToTier;
+        uint _hodlsInTier = tierProperties[_tier].hodlsInTier;
         uint _tierAveragePurchaseTime = tierProperties[_tier].averagePurchaseTime;
-        if (_hodlsAddedToTier > 1) {
-            tierProperties[_tier].averagePurchaseTime = ((_tierAveragePurchaseTime.mul(_hodlsAddedToTier)).sub(hodlProperties[_hodlId].purchaseTime)).div(_hodlsAddedToTier.sub(1));
+        if (_hodlsInTier > 1) {
+            tierProperties[_tier].averagePurchaseTime = ((_tierAveragePurchaseTime.mul(_hodlsInTier)).sub(hodlProperties[_hodlId].purchaseTime)).div(_hodlsInTier.sub(1));
         } else {
             tierProperties[_tier].averagePurchaseTime = 0;
         }
-        tierProperties[_tier].hodlsAddedToTier = tierProperties[_tier].hodlsAddedToTier.sub(1);
+        tierProperties[_tier].hodlsInTier = tierProperties[_tier].hodlsInTier.sub(1);
         // external calls
         aToken.redeem(oneHundredDai);
         underlying.transfer(ownerOf(_hodlId), oneHundredDai);
