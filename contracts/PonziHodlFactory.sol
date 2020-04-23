@@ -66,7 +66,7 @@ contract PonziHodlFactory is ERC721Full {
     struct tier {
         uint size;
         uint hodlsAddedToTier;
-        uint hodlsAddedToTierWatermark;
+        uint hodlsRemovedFromTier;
         uint averagePurchaseTime;
         uint interestAlreadyWithdrawn;
     }
@@ -98,13 +98,13 @@ contract PonziHodlFactory is ERC721Full {
     function _addToTier(uint _hodlId) internal {
         //add to existing tier
         uint _hodlsAddedToTier = tierProperties[tierCount].hodlsAddedToTier;
-        uint _hodlsAddedToTierWatermark = tierProperties[tierCount].hodlsAddedToTierWatermark;
+        uint _hodlsRemovedFromTier = tierProperties[tierCount].hodlsRemovedFromTier;
+        uint _hodlsInTier = _hodlsAddedToTier.sub(_hodlsRemovedFromTier);
         uint _sizeOfTier = tierProperties[tierCount].size;
         uint _tierAveragePurchaseTime = tierProperties[tierCount].averagePurchaseTime;
-        if (_hodlsAddedToTierWatermark < _sizeOfTier) {
+        if (_hodlsAddedToTier < _sizeOfTier) {
             tierProperties[tierCount].hodlsAddedToTier = _hodlsAddedToTier.add(1);
-            tierProperties[tierCount].hodlsAddedToTierWatermark = _hodlsAddedToTierWatermark.add(1);
-            tierProperties[tierCount].averagePurchaseTime = ((_tierAveragePurchaseTime.mul(_hodlsAddedToTier)).add(now)).div(_hodlsAddedToTier.add(1));
+            tierProperties[tierCount].averagePurchaseTime = ((_tierAveragePurchaseTime.mul(_hodlsInTier)).add(now)).div(_hodlsInTier.add(1));
         } else {
             _createNewTier();
             _addToTier(_hodlId);
