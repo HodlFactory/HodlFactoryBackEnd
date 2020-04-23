@@ -56,6 +56,11 @@ contract PonziHodlFactory is ERC721Full {
     uint public testingVariableC = 0;
     uint public testingVariableD = 0;
     uint public testingVariableE = 0;
+    uint public testingVariableF = 0;
+    uint public testingVariableG = 0;
+    uint public testingVariableH = 69;
+    uint public testingVariableI = 0;
+    uint public testingVariableJ = 0;
 
     struct hodl {
         uint purchaseTime;
@@ -133,36 +138,60 @@ contract PonziHodlFactory is ERC721Full {
         latestHodlId = latestHodlId.add(1); 
     } 
 
-    function getTierInterestAccrued(uint _tierId) public view returns (uint) {
+    // function getTierInterestAccrued(uint _tierId) public view returns (uint) {
+    //     uint _totalAdaiBalance = aToken.balanceOf(address(this)); 
+    //     uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
+    //     uint _totalInterestAvailable = (_totalAdaiBalance.sub(_totalDaiBalance)).add(totalInterestWithdrawn);
+    //     uint _hodlsInTier = tierProperties[_tierId].hodlsInTier;
+    //     uint _interestAlreadyWithdrawn = tierProperties[_tierId].interestAlreadyWithdrawn;
+    //     _totalInterestAvailable = _totalInterestAvailable.sub(_interestAlreadyWithdrawn);
+    //     uint _numerator = _totalInterestAvailable.mul(now.sub(tierProperties[_tierId].averagePurchaseTime)).mul(_hodlsInTier);
+    //     uint _denominator = (now.sub(averagePurchaseTime)).mul(hodlCount);
+    //     return (_numerator.div(_denominator));
+    // }
+
+    function getTierInterestAccrued(uint _tierId) public returns (uint) {
         uint _totalAdaiBalance = aToken.balanceOf(address(this)); 
         uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
         uint _totalInterestAvailable = (_totalAdaiBalance.sub(_totalDaiBalance)).add(totalInterestWithdrawn);
         uint _hodlsInTier = tierProperties[_tierId].hodlsInTier;
         uint _interestAlreadyWithdrawn = tierProperties[_tierId].interestAlreadyWithdrawn;
-        uint _numerator = _totalInterestAvailable.mul(now.sub(tierProperties[_tierId].averagePurchaseTime)).mul(_hodlsInTier);
+        uint _numerator = (now.sub(tierProperties[_tierId].averagePurchaseTime)).mul(_hodlsInTier);
         uint _denominator = (now.sub(averagePurchaseTime)).mul(hodlCount);
-        return ((_numerator.div(_denominator)).sub(_interestAlreadyWithdrawn));
+
+        // testingVariableA = _totalInterestAvailable;
+        // testingVariableB = _interestAlreadyWithdrawn;
+        // testingVariableC = _numerator;
+        // testingVariableD = _denominator;
+        // testingVariableE = _totalAdaiBalance;
+        // testingVariableF = _totalDaiBalance;
+        // testingVariableG = totalInterestWithdrawn;
+        // testingVariableH = now;
+        // testingVariableI = tierProperties[_tierId].averagePurchaseTime;
+        // testingVariableJ = averagePurchaseTime;
+
+        return ((_totalInterestAvailable.mul(_numerator.div(_denominator))).sub(_interestAlreadyWithdrawn));
     }
 
-    function getInterestAvailableToWithdrawView(uint _hodlId) public view hodlExists(_hodlId) returns (uint) {
-        uint _interestToWithdraw;
-        uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
-        uint _tier = hodlProperties[_hodlId].tier;
-        // tier 0 gets their own interest, any other tier, you do not get your own
-        if (_tier != 0) {
-            _tier = _tier.add(1);
-        }
-        for (uint i = _tier; i <= tierCount; i++) {
-            uint _tierInterestAccrued = getTierInterestAccrued(i);
-            uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
-            _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
-            if (i != 0) {
-                // otherwise double counting tier 0 players
-                _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
-            }
-        }
-        return _interestToWithdraw;
-    }
+    // function getInterestAvailableToWithdrawView(uint _hodlId) public view hodlExists(_hodlId) returns (uint) {
+    //     uint _interestToWithdraw;
+    //     uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
+    //     uint _tier = hodlProperties[_hodlId].tier;
+    //     // tier 0 gets their own interest, any other tier, you do not get your own
+    //     if (_tier != 0) {
+    //         _tier = _tier.add(1);
+    //     }
+    //     for (uint i = _tier; i <= tierCount; i++) {
+    //         uint _tierInterestAccrued = getTierInterestAccrued(i);
+    //         uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
+    //         _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
+    //         if (i != 0) {
+    //             // otherwise double counting tier 0 players
+    //             _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
+    //         }
+    //     }
+    //     return _interestToWithdraw;
+    // }
 
     // the same as the above, except that it updates 'interestAlreadyWithdrawn' property of each tier 
     function _getInterestAvailableToWithdraw(uint _hodlId) internal hodlExists(_hodlId) returns (uint) {
@@ -202,11 +231,18 @@ contract PonziHodlFactory is ERC721Full {
         // remove HODL from tier
         uint _tier = hodlProperties[_hodlId].tier;
         uint _hodlsInTier = tierProperties[_tier].hodlsInTier;
+        // update tier average purchase time
         uint _tierAveragePurchaseTime = tierProperties[_tier].averagePurchaseTime;
         if (_hodlsInTier > 1) {
             tierProperties[_tier].averagePurchaseTime = ((_tierAveragePurchaseTime.mul(_hodlsInTier)).sub(hodlProperties[_hodlId].purchaseTime)).div(_hodlsInTier.sub(1));
         } else {
             tierProperties[_tier].averagePurchaseTime = 0;
+        }
+        // update total average purchase time
+        if (hodlCount > 1) {
+            averagePurchaseTime = ((averagePurchaseTime.mul(hodlCount)).sub(hodlProperties[_hodlId].purchaseTime)).div(hodlCount.sub(1));
+        } else {
+            averagePurchaseTime = 0;
         }
         tierProperties[_tier].hodlsInTier = tierProperties[_tier].hodlsInTier.sub(1);
         // external calls
