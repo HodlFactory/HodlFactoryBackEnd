@@ -46,9 +46,11 @@ contract PonziHodlFactory is ERC721Full {
     }
 
     uint public hodlCount = 0;
+    uint public latestHodlId = 0;
     uint public tierCount = 0;
     uint public averagePurchaseTime = 0;
     uint constant public oneHundredDai = 10**20;
+    uint public totalInterestWithdrawn = 0;
     uint public testingVariableA = 69;
     uint public testingVariableB = 0;
     uint public testingVariableC = 0;
@@ -116,24 +118,25 @@ contract PonziHodlFactory is ERC721Full {
 
     function createHodl() public {
         // UPDATE VARIABLES
-        _addToTier(hodlCount);
-        hodlOwnerTracker[msg.sender].push(hodlCount);
-        hodlProperties[hodlCount].purchaseTime = now;
-        hodlProperties[hodlCount].tier = tierCount;
+        _addToTier(latestHodlId);
+        hodlOwnerTracker[msg.sender].push(latestHodlId);
+        hodlProperties[latestHodlId].purchaseTime = now;
+        hodlProperties[latestHodlId].tier = tierCount;
         averagePurchaseTime = ((averagePurchaseTime.mul(hodlCount)).add(now)).div(hodlCount.add(1));
         // SWAP DAI FOR aDAI
         underlying.mint(oneHundredDai);
         underlying.approve(address(aaveLendingPoolCore), oneHundredDai);
         aaveLendingPool.deposit(address(underlying), oneHundredDai, 0);
         // // GENERATE NFT
-        _mint(msg.sender, hodlCount);
+        _mint(msg.sender, latestHodlId);
         hodlCount = hodlCount.add(1);  
+        latestHodlId = latestHodlId.add(1); 
     } 
 
     function getTierInterestAccrued(uint _tierId) public view returns (uint) {
         uint _totalAdaiBalance = aToken.balanceOf(address(this)); 
         uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
-        uint _totalInterestAvailable = _totalAdaiBalance.sub(_totalDaiBalance);
+        uint _totalInterestAvailable = (_totalAdaiBalance.sub(_totalDaiBalance)).add(totalInterestWithdrawn);
         uint _hodlsInTier = tierProperties[_tierId].hodlsInTier;
         uint _interestAlreadyWithdrawn = tierProperties[_tierId].interestAlreadyWithdrawn;
         uint _numerator = _totalInterestAvailable.mul(now.sub(tierProperties[_tierId].averagePurchaseTime)).mul(_hodlsInTier);
@@ -141,48 +144,54 @@ contract PonziHodlFactory is ERC721Full {
         return ((_numerator.div(_denominator)).sub(_interestAlreadyWithdrawn));
     }
 
-    // change back to view
     function getInterestAvailableToWithdrawView(uint _hodlId) public view hodlExists(_hodlId) returns (uint) {
         uint _interestToWithdraw;
         uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
         uint _tier = hodlProperties[_hodlId].tier;
-        // testingVariableA = _tier;
         // tier 0 gets their own interest, any other tier, you do not get your own
         if (_tier != 0) {
             _tier = _tier.add(1);
         }
         for (uint i = _tier; i <= tierCount; i++) {
-            // require(false,"STFU");
             uint _tierInterestAccrued = getTierInterestAccrued(i);
-            // testingVariableA = _tierInterestAccrued;
             uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
             if (i != 0) {
                 // otherwise double counting tier 0 players
                 _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
             }
-
         }
         return _interestToWithdraw;
     }
 
-    // do a copy of the above
-    function getInterestAvailableToWithdraw(uint _hodlId) public hodlExists(_hodlId) returns (uint) {
+    // the same as the above, except that it updates 'interestAlreadyWithdrawn' property of each tier 
+    function _getInterestAvailableToWithdraw(uint _hodlId) internal hodlExists(_hodlId) returns (uint) {
         uint _interestToWithdraw;
         uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
         uint _tier = hodlProperties[_hodlId].tier;
-        for (uint i = _tier.add(1); i <= tierCount; i++) {
+        // tier 0 gets their own interest, any other tier, you do not get your own
+        if (_tier != 0) {
+            _tier = _tier.add(1);
+        }
+        for (uint i = _tier; i <= tierCount; i++) {
             uint _tierInterestAccrued = getTierInterestAccrued(i);
             uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
+            testingVariableA = _tierInterestAccrued;
+            testingVariableB = _interestToWithdrawFromThisTier;
+            testingVariableC = _playerCount;
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
-            _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
             tierProperties[i].interestAlreadyWithdrawn = tierProperties[i].interestAlreadyWithdrawn.add(_interestToWithdrawFromThisTier); // <- only new line from View version
+            if (i != 0) {
+                // otherwise double counting tier 0 players
+                _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
+            }
         }
         return _interestToWithdraw;
     }
 
     function _withdrawInterest(uint _hodlId) internal {
-        uint _interestToWithdraw = getInterestAvailableToWithdraw(_hodlId);
+        uint _interestToWithdraw = _getInterestAvailableToWithdraw(_hodlId);
+        totalInterestWithdrawn = totalInterestWithdrawn.add(_interestToWithdraw);
         aToken.redeem(_interestToWithdraw);
         underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
     } 
