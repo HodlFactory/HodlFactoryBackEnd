@@ -31,7 +31,7 @@ contract('CharityHodlFactoryTests', (accounts) => {
   });
 
   it('createHodl', async () => {
-    await hodlFactory.createHodl();
+    await hodlFactory.createHodl("Andrew",user);
     var hodlCount = await hodlFactory.hodlCount.call();
     assert.equal(hodlCount,1);
     // check that 100 Dai allocated
@@ -48,14 +48,14 @@ contract('CharityHodlFactoryTests', (accounts) => {
   it('create second Hodl, check averageTimeLastWithdrawn', async () => {
     // hodl1
     purchaseTime1 = await time.latest();
-    await hodlFactory.createHodl();
+    await hodlFactory.createHodl("Andrew",user);
     var averagePurchaseTime = await hodlFactory.averageTimeLastWithdrawn.call();
     var difference = Math.abs(purchaseTime1.toString() - averagePurchaseTime.toString());
     assert.isBelow(difference/purchaseTime1, 0.0001);
     // hodl2
     await time.increase(time.duration.weeks(1));
     purchaseTime2 = await time.latest();
-    await hodlFactory.createHodl();
+    await hodlFactory.createHodl("Andrew",user);
     averagePurchaseTime = await hodlFactory.averageTimeLastWithdrawn.call();
     var averagePurchaseTimeShouldBe = (purchaseTime1.toNumber() + purchaseTime2.toNumber())/2;
     var difference = Math.abs(averagePurchaseTime.toString() - averagePurchaseTimeShouldBe.toString());
@@ -63,7 +63,7 @@ contract('CharityHodlFactoryTests', (accounts) => {
   });
 
   it('check getInterestAvailableToWithdraw, single HODL', async () => {
-    await hodlFactory.createHodl();
+    await hodlFactory.createHodl("Andrew",user);
     await rToken.generate10PercentInterest(hodlFactory.address);
     await time.increase(time.duration.days(1)); // to avoid multiply by zero when doing now - purchase time
     var interestAvailable = await hodlFactory.getInterestAvailableToWithdraw.call(0);
@@ -72,9 +72,9 @@ contract('CharityHodlFactoryTests', (accounts) => {
   });
 
   it('check getInterestAvailableToWithdraw, two HODLs', async () => {
-    await hodlFactory.createHodl();
+    await hodlFactory.createHodl("Andrew",user);
     await time.increase(time.duration.days(1)); 
-    await hodlFactory.createHodl();
+    await hodlFactory.createHodl("Andrew",user);
     await time.increase(time.duration.days(2));
     await rToken.generate10PercentInterest(hodlFactory.address);
     //10 units of time, 20 dai interest, 0th = 3/5 = 12; 1st = 2/5 = 8
@@ -90,7 +90,7 @@ contract('CharityHodlFactoryTests', (accounts) => {
 
   it('check withdrawInterest, single HODL', async () => {
     user = user0;
-    await hodlFactory.createHodl();
+    await hodlFactory.createHodl("Andrew",user);
     await rToken.generate10PercentInterest(hodlFactory.address);
     await time.increase(time.duration.days(1)); // to avoid multiply by zero when doing now - purchase time
     await hodlFactory.withdrawInterest(0);
@@ -100,11 +100,11 @@ contract('CharityHodlFactoryTests', (accounts) => {
   });
 
   it('check withdrawInterest, two HODLs', async () => {
-    await hodlFactory.createHodl({ from: user0 });
+    await hodlFactory.createHodl("Andrew",user,{ from: user0 });
     var hodlOwner = await hodlFactory.ownerOf.call(0);
     assert.equal(user0, hodlOwner);
     await time.increase(time.duration.days(1)); 
-    await hodlFactory.createHodl({ from: user1 });
+    await hodlFactory.createHodl("Andrew",user1,{ from: user1 });
     var hodlOwner = await hodlFactory.ownerOf.call(1);
     assert.equal(user1, hodlOwner);
     await time.increase(time.duration.days(2));
@@ -123,7 +123,7 @@ contract('CharityHodlFactoryTests', (accounts) => {
 
   it('check destroyHodl, one HODL', async () => {
     user = user0;
-    await hodlFactory.createHodl({ from: user });
+    await hodlFactory.createHodl("Andrew",user,{ from: user });
     await time.increase(time.duration.days(1)); 
     await rToken.generate10PercentInterest(hodlFactory.address);
     await hodlFactory.destroyHodl(0);
@@ -134,11 +134,11 @@ contract('CharityHodlFactoryTests', (accounts) => {
   });
 
   it('check destroyHodl, two HODLs', async () => {
-    await hodlFactory.createHodl({ from: user0 });
+    await hodlFactory.createHodl("Andrew",user,{ from: user0 });
     var hodlOwner = await hodlFactory.ownerOf.call(0);
     assert.equal(user0, hodlOwner);
     await time.increase(time.duration.days(1)); 
-    await hodlFactory.createHodl({ from: user1 });
+    await hodlFactory.createHodl("Andrew",user1,{ from: user1 });
     var hodlOwner = await hodlFactory.ownerOf.call(1);
     assert.equal(user1, hodlOwner);
     await time.increase(time.duration.days(2));
@@ -153,6 +153,16 @@ contract('CharityHodlFactoryTests', (accounts) => {
     var interestShouldBe = new BN(web3.utils.toWei('108', 'ether'));
     var difference = Math.abs(interestShouldBe.toString() - interestWithdrawn.toString());
     assert.isBelow(difference/interestWithdrawn,0.0001);
+  });
+
+  it('check destroyHodl then create After', async () => {
+    user = user0;
+    await hodlFactory.createHodl("Andrew",user);
+    await time.increase(time.duration.days(1)); 
+    await rToken.generate10PercentInterest(hodlFactory.address);
+    await hodlFactory.destroyHodl(0);
+    await hodlFactory.createHodl("Andrew",user);
+
   });
 
 

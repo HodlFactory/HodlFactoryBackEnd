@@ -37,6 +37,7 @@ contract CharityHodlFactory is ERC721Full {
     }
 
     uint public hodlCount = 0;
+    uint public latestHodlId = 0;
     uint public averageTimeLastWithdrawn = 0;
     uint constant public oneHundredDai = 10**20; 
     uint public testingVariableA = 0;
@@ -46,6 +47,7 @@ contract CharityHodlFactory is ERC721Full {
      struct hodl {
         uint purchaseTime;
         uint interestLastWithdrawnTime;
+        string name;
         address interestRecipient;
     }
 
@@ -62,11 +64,13 @@ contract CharityHodlFactory is ERC721Full {
         return hodlProperties[_hodlId].purchaseTime;
     }
 
-    function createHodl() public {
+    function createHodl(string memory _name, address _addressOfCharity) public {
         // UPDATE VARIABLES
-        hodlOwnerTracker[msg.sender].push(hodlCount);
-        hodlProperties[hodlCount].purchaseTime = now;
-        hodlProperties[hodlCount].interestLastWithdrawnTime = now;
+        hodlOwnerTracker[msg.sender].push(latestHodlId);
+        hodlProperties[latestHodlId].purchaseTime = now;
+        hodlProperties[latestHodlId].interestLastWithdrawnTime = now;
+        hodlProperties[latestHodlId].name = _name;
+        hodlProperties[latestHodlId].interestRecipient = _addressOfCharity;
         averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).add(now)).div(hodlCount.add(1));
         // SWAP DAI FOR rDAI 
         // I need to transfer Dai to the contract seperately, annoyingly 
@@ -75,6 +79,7 @@ contract CharityHodlFactory is ERC721Full {
         // // GENERATE NFT
         _mint(msg.sender, hodlCount);
         hodlCount = hodlCount.add(1);
+        latestHodlId = latestHodlId.add(1); 
     } 
 
     function getInterestAvailableToWithdrawView(uint _hodlId) public view returns (uint) {
@@ -106,7 +111,8 @@ contract CharityHodlFactory is ERC721Full {
         hodlProperties[_hodlId].interestLastWithdrawnTime = now;
         // external calls
         assert(rToken.redeem(_interestToWithdraw));
-        underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
+        address _addressOfCharity = hodlProperties[_hodlId].interestRecipient;
+        underlying.transfer(_addressOfCharity, _interestToWithdraw);
     }
 
     function destroyHodl(uint _hodlId) public {

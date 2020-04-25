@@ -43,6 +43,7 @@ contract ClassicHodlFactory is ERC721Full {
     }
 
     uint public hodlCount = 0;
+    uint public latestHodlId = 0;
     uint public averageTimeLastWithdrawn = 0;
     uint constant public oneHundredDai = 10**20;
     uint public testingVariableA = 69;
@@ -80,10 +81,10 @@ contract ClassicHodlFactory is ERC721Full {
 
     function createHodl(string memory _name) public {
         // UPDATE VARIABLES
-        hodlOwnerTracker[msg.sender].push(hodlCount);
-        hodlProperties[hodlCount].purchaseTime = now;
-        hodlProperties[hodlCount].interestLastWithdrawnTime = now;
-        hodlProperties[hodlCount].name = _name;
+        hodlOwnerTracker[msg.sender].push(latestHodlId);
+        hodlProperties[latestHodlId].purchaseTime = now;
+        hodlProperties[latestHodlId].interestLastWithdrawnTime = now;
+        hodlProperties[latestHodlId].name = _name;
         averageTimeLastWithdrawn = ((averageTimeLastWithdrawn.mul(hodlCount)).add(now)).div(hodlCount.add(1));
          // SWAP DAI FOR aDAI
         underlying.mint(oneHundredDai);
@@ -92,6 +93,7 @@ contract ClassicHodlFactory is ERC721Full {
         // // GENERATE NFT
         _mint(msg.sender, hodlCount);
         hodlCount = hodlCount.add(1);  
+        latestHodlId = latestHodlId.add(1);
     } 
 
     function getInterestAvailableToWithdraw(uint _hodlId) public view returns (uint) {

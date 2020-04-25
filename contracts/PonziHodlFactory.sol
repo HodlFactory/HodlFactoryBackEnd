@@ -65,6 +65,7 @@ contract PonziHodlFactory is ERC721Full {
     struct hodl {
         uint purchaseTime;
         uint tier;
+        string name;
     }
 
     struct tier {
@@ -121,12 +122,13 @@ contract PonziHodlFactory is ERC721Full {
         return _playerCount;
     }
 
-    function createHodl() public {
+    function createHodl(string memory _name) public {
         // UPDATE VARIABLES
         _addToTier(latestHodlId);
         hodlOwnerTracker[msg.sender].push(latestHodlId);
         hodlProperties[latestHodlId].purchaseTime = now;
         hodlProperties[latestHodlId].tier = tierCount;
+        hodlProperties[latestHodlId].name = _name;
         averagePurchaseTime = ((averagePurchaseTime.mul(hodlCount)).add(now)).div(hodlCount.add(1));
         // SWAP DAI FOR aDAI
         underlying.mint(oneHundredDai);
