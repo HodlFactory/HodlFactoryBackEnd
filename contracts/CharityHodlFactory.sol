@@ -53,6 +53,7 @@ contract CharityHodlFactory is ERC721Full {
 
     mapping (uint => hodl) public hodlProperties; 
     mapping (address => uint[]) hodlOwnerTracker;
+    mapping (address => uint[]) hodlsDeletedTracker;
 
     // event stfu(uint indexed stfu);
 
@@ -60,8 +61,20 @@ contract CharityHodlFactory is ERC721Full {
         return ownerOf(_hodlId);
     }
 
+    function getHodlName(uint _hodlId) external view returns (string memory) {
+        return hodlProperties[_hodlId].name;
+    }
+
     function getHodlPurchaseTime(uint _hodlId) external view returns (uint) {
         return hodlProperties[_hodlId].purchaseTime;
+    }
+
+    function getHodlsOwned() public view returns(uint[] memory) {
+        return(hodlOwnerTracker[msg.sender]);
+    }
+
+    function getHodlsDeleted() public view returns(uint[] memory) {
+        return(hodlsDeletedTracker[msg.sender]);
     }
 
     function createHodl(string memory _name, address _addressOfCharity) public {
@@ -131,6 +144,7 @@ contract CharityHodlFactory is ERC721Full {
         // remove HODL
         hodlCount = hodlCount.sub(1);
         _burn(_hodlId);
+        hodlsDeletedTracker[msg.sender].push(_hodlId);
     }
 
 }

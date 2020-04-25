@@ -60,6 +60,7 @@ contract ClassicHodlFactory is ERC721Full {
 
     mapping (uint => hodl) public hodlProperties; 
     mapping (address => uint[]) hodlOwnerTracker;
+    mapping (address => uint[]) hodlsDeletedTracker;
 
     // event stfu(uint indexed stfu);
 
@@ -77,6 +78,10 @@ contract ClassicHodlFactory is ERC721Full {
 
     function getHodlsOwned() public view returns(uint[] memory) {
         return(hodlOwnerTracker[msg.sender]);
+    }
+
+    function getHodlsDeleted() public view returns(uint[] memory) {
+        return(hodlsDeletedTracker[msg.sender]);
     }
 
     function createHodl(string memory _name) public {
@@ -133,6 +138,7 @@ contract ClassicHodlFactory is ERC721Full {
         // remove HODL
         hodlCount = hodlCount.sub(1);
         _burn(_hodlId);
+        hodlsDeletedTracker[msg.sender].push(_hodlId);
     }
 
 }

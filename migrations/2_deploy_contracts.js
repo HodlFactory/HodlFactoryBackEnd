@@ -22,7 +22,9 @@ module.exports = function(deployer, network) {
     //classic
     deployer.deploy(ClassicHodlFactory, aaveCashAddressKovan, aaveAtokenAddressKovan,aaveLendingPoolAddressKovan,aaveLendingPoolCoreAddressKovan);
     //charity
-    // deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
+    deployer.deploy(CharityHodlFactory, rDaiCashAddressKovan, rTokenAddressKovan);
+    //ponzi
+    deployer.deploy(PonziHodlFactory, aaveCashAddressKovan, aaveAtokenAddressKovan,aaveLendingPoolAddressKovan,aaveLendingPoolCoreAddressKovan);
   } else {
     //classic
     deployer.deploy(CashMockup).then((deployedCash) => {

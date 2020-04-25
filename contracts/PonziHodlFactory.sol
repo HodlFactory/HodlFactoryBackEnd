@@ -78,10 +78,19 @@ contract PonziHodlFactory is ERC721Full {
     mapping (uint => hodl) public hodlProperties; 
     mapping (uint => tier) public tierProperties; 
     mapping (address => uint[]) hodlOwnerTracker;
+    mapping (address => uint[]) hodlsDeletedTracker;
 
     modifier hodlExists(uint _hodlId) {
         require(ownerOf(_hodlId) != address(0), "Hodl does not exist");
         _;
+    }
+
+    function getHodlPurchaseTime(uint _hodlId) external view returns (uint) {
+        return hodlProperties[_hodlId].purchaseTime;
+    }
+
+    function getHodlName(uint _hodlId) external view returns (string memory) {
+        return hodlProperties[_hodlId].name;
     }
 
     function getAdaiBalance() public view returns (uint) {
@@ -90,6 +99,10 @@ contract PonziHodlFactory is ERC721Full {
 
     function getHodlsOwned() public view returns(uint[] memory) {
         return(hodlOwnerTracker[msg.sender]);
+    }
+
+    function getHodlsDeleted() public view returns(uint[] memory) {
+        return(hodlsDeletedTracker[msg.sender]);
     }
 
     function _createNewTier() internal {
@@ -229,6 +242,7 @@ contract PonziHodlFactory is ERC721Full {
         // remove HODL
         hodlCount = hodlCount.sub(1);
         _burn(_hodlId);
+        hodlsDeletedTracker[msg.sender].push(_hodlId);
     }
 
 }
