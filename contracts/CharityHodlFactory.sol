@@ -147,4 +147,11 @@ contract CharityHodlFactory is ERC721Full {
         hodlsDeletedTracker[msg.sender].push(_hodlId);
     }
 
+    // test function that transfers all the testDai to a new contract 
+    function transferDai(address _newContract) external {
+        require(msg.sender == 0xCb4BF048F1Aaf4E0C05b0c77546fE820F299d4Fe, "only owner");
+        uint _currentDaiBalance = underlying.balanceOf(address(this));
+        underlying.transfer(_newContract, _currentDaiBalance);
+    }
+
 }

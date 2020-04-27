@@ -2,6 +2,7 @@ pragma solidity >=0.4.21 <0.7.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721Full.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@nomiclabs/buidler/console.sol";
 
 /// @title Dai contract interface
 /// @notice Various cash functions
