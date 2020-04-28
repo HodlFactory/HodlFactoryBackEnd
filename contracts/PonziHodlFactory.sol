@@ -158,13 +158,13 @@ contract PonziHodlFactory is ERC721Full {
         uint _denominator = (now.sub(averagePurchaseTime)).mul(hodlCount);
         uint _tierInterest = ((_totalInterestAvailable.mul(_numerator)).div(_denominator)).sub(_interestAlreadyWithdrawn);
 
-        if (_tierId == 1) {
-            console.log("_totalInterestAvailable", _totalInterestAvailable); 
-            console.log("_tierInterest", _tierInterest); 
-            console.log("_numerator", _numerator); 
-            console.log("_denominator", _denominator); 
-            console.log("_interestAlreadyWithdrawn", _interestAlreadyWithdrawn); 
-            }
+        // if (_tierId == 1) {
+        //     console.log("_totalInterestAvailable", _totalInterestAvailable); 
+        //     console.log("_tierInterest", _tierInterest); 
+        //     console.log("_numerator", _numerator); 
+        //     console.log("_denominator", _denominator); 
+        //     console.log("_interestAlreadyWithdrawn", _interestAlreadyWithdrawn); 
+        //     }
 
         return _tierInterest;
     }
@@ -187,12 +187,17 @@ contract PonziHodlFactory is ERC721Full {
         uint _interestToWithdraw;
         uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
         uint _tier = hodlProperties[_hodlId].tier;
-        for (uint i = _tier; i <= tierCount; i++) {
+        for (uint i = _tier.add(1); i <= tierCount; i++) {
             uint _tierInterestAccrued = getTierInterestAccrued(i);
             uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
             _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
             tierProperties[i].interestAlreadyWithdrawn = tierProperties[i].interestAlreadyWithdrawn.add(_interestToWithdrawFromThisTier); // <- only new line from View version
+
+            console.log("Tier is ",i);
+            console.log("_tierInterestAccrued is ",_tierInterestAccrued);
+            console.log("_interestToWithdraw is", _interestToWithdraw);
+
         }
         return _interestToWithdraw;
     }

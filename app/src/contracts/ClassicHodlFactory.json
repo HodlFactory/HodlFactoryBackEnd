@@ -14746,12 +14746,13 @@
         }
       },
       "links": {},
-      "address": "0xFeC464348e11999a5450cB961BecAAa1332a9AE2",
-      "transactionHash": "0x19f37f9a7ef5e8d04a7299e736f4c396c73615df079d80ff51d66ebaf7a30a82"
+      "address": "0x858d4520A8F4f1D62930b504883315acA8CcCb3b",
+      "transactionHash": "0x7e38e7cc17a82297e959aebd32fa21597dbfb07599a082928b70b8b78b8f3e99"
     }
   },
   "schemaVersion": "3.0.19",
-  "updatedAt": "2020-04-28T12:55:25.635Z",
+  "updatedAt": "2020-04-28T13:08:29.208Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {
       "approve(address,uint256)": {
