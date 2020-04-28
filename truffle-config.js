@@ -1,7 +1,7 @@
 const path = require("path");
 const HDWalletProvider = require('truffle-hdwallet-provider');
-// const mnemonic = 'defense ready lady corn other ride rapid collect avocado tongue price nut'; // pls dont steal my testnet ether 
-const mnemonic = 'case priority seek winter uphold brother alarm various glide run soul fork'; // pls dont steal my testnet ether 
+const mnemonic = 'defense ready lady corn other ride rapid collect avocado tongue price nut'; // pls dont steal my testnet ether 
+// const mnemonic = 'case priority seek winter uphold brother alarm various glide run soul fork'; // pls dont steal my testnet ether 
 const mainnetProviderUrl = 'https://mainnet.infura.io/v3/e811479f4c414e219e7673b6671c2aba'; 
 const rinkebyProviderUrl = 'https://rinkeby.infura.io/v3/e811479f4c414e219e7673b6671c2aba';
 const kovanProviderUrl = 'https://kovan.infura.io/v3/e811479f4c414e219e7673b6671c2aba';
@@ -30,6 +30,7 @@ module.exports = {
       // gas: 10000000,
       gasPrice: 10000000000, // 10 gwei
       skipDryRun: true,
+      // networkCheckTimeout: 10,
     },
     goerli: {
       network_id: 5,

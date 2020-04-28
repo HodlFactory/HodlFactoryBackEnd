@@ -47,11 +47,6 @@ contract ClassicHodlFactory is ERC721Full {
     uint public latestHodlId = 0;
     uint public averageTimeLastWithdrawn = 0;
     uint constant public oneHundredDai = 10**20;
-    uint public testingVariableA = 69;
-    uint public testingVariableB = 0;
-    uint public testingVariableC = 0;
-    uint public testingVariableD = 0;
-    uint public testingVariableE = 0;
 
      struct hodl {
         uint purchaseTime;
@@ -97,7 +92,7 @@ contract ClassicHodlFactory is ERC721Full {
         underlying.approve(address(aaveLendingPoolCore), oneHundredDai);
         aaveLendingPool.deposit(address(underlying), oneHundredDai, 0);
         // // GENERATE NFT
-        _mint(msg.sender, hodlCount);
+        _mint(msg.sender, latestHodlId);
         hodlCount = hodlCount.add(1);  
         latestHodlId = latestHodlId.add(1);
     } 

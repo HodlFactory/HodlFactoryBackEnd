@@ -39,7 +39,7 @@ contract CharityHodlFactory is ERC721Full {
     uint public hodlCount = 0;
     uint public latestHodlId = 0;
     uint public averageTimeLastWithdrawn = 0;
-    uint constant public oneHundredDai = 10**20; 
+    uint constant public oneHundredDai = 10**18; //10^20 for main and testing, 10^18 for kovan to conserve kovan dai
     uint public testingVariableA = 0;
     uint public testingVariableB = 0;
     uint public testingVariableC = 0;
@@ -77,6 +77,10 @@ contract CharityHodlFactory is ERC721Full {
         return(hodlsDeletedTracker[msg.sender]);
     }
 
+    function getHodlCharity(uint _hodlId) external view returns (address) {
+        return hodlProperties[_hodlId].interestRecipient;
+    }
+
     function createHodl(string memory _name, address _addressOfCharity) public {
         // UPDATE VARIABLES
         hodlOwnerTracker[msg.sender].push(latestHodlId);
@@ -90,7 +94,7 @@ contract CharityHodlFactory is ERC721Full {
         underlying.approve(address(rToken), oneHundredDai);
         assert(rToken.mint(oneHundredDai)); 
         // // GENERATE NFT
-        _mint(msg.sender, hodlCount);
+        _mint(msg.sender, latestHodlId);
         hodlCount = hodlCount.add(1);
         latestHodlId = latestHodlId.add(1); 
     } 
