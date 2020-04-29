@@ -51,7 +51,6 @@ contract PonziHodlFactory is ERC721Full {
     uint public tierCount = 0;
     uint public averagePurchaseTime = 0;
     uint constant public oneHundredDai = 10**20;
-    uint public totalInterestWithdrawn = 0;
 
     struct hodl {
         uint purchaseTime;
@@ -64,7 +63,6 @@ contract PonziHodlFactory is ERC721Full {
         uint size;
         uint hodlsInTier;
         uint averagePurchaseTime;
-        uint interestAlreadyWithdrawn;
     }
 
     mapping (uint => hodl) public hodlProperties; 
@@ -152,21 +150,11 @@ contract PonziHodlFactory is ERC721Full {
     function getTierInterestAccrued(uint _tierId) public view returns (uint) {
         uint _totalAdaiBalance = aToken.balanceOf(address(this)); 
         uint _totalDaiBalance = hodlCount.mul(oneHundredDai);
-        uint _totalInterestAvailable = (_totalAdaiBalance.sub(_totalDaiBalance)).add(totalInterestWithdrawn);
+        uint _totalInterestAvailable = _totalAdaiBalance.sub(_totalDaiBalance);
         uint _hodlsInTier = tierProperties[_tierId].hodlsInTier;
-        uint _interestAlreadyWithdrawn = tierProperties[_tierId].interestAlreadyWithdrawn;
         uint _numerator = (now.sub(tierProperties[_tierId].averagePurchaseTime)).mul(_hodlsInTier);
         uint _denominator = (now.sub(averagePurchaseTime)).mul(hodlCount);
-        uint _tierInterest = ((_totalInterestAvailable.mul(_numerator)).div(_denominator)).sub(_interestAlreadyWithdrawn);
-
-        // if (_tierId == 1) {
-        //     console.log("_totalInterestAvailable", _totalInterestAvailable); 
-        //     console.log("_tierInterest", _tierInterest); 
-        //     console.log("_numerator", _numerator); 
-        //     console.log("_denominator", _denominator); 
-        //     console.log("_interestAlreadyWithdrawn", _interestAlreadyWithdrawn); 
-        //     }
-
+        uint _tierInterest = (_totalInterestAvailable.mul(_numerator)).div(_denominator);
         return _tierInterest;
     }
 
@@ -180,12 +168,16 @@ contract PonziHodlFactory is ERC721Full {
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
             _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
         }
-        _interestToWithdraw = _interestToWithdraw.sub(hodlProperties[_hodlId].interestAlreadyWithdrawn);
+        uint _interestAlreadyWithdrawn = hodlProperties[_hodlId].interestAlreadyWithdrawn;
+        if (_interestAlreadyWithdrawn >= _interestToWithdraw) {
+            _interestToWithdraw = 0;
+        } else {
+            _interestToWithdraw = _interestToWithdraw.sub(hodlProperties[_hodlId].interestAlreadyWithdrawn);
+        }
         return _interestToWithdraw;
     }
 
-    // the same as the above, except that it updates 'interestAlreadyWithdrawn' property of each tier 
-    // and 'interestAlreadyWithdrawn' property of each hodl
+    // the same as the above, except that it updates 'interestAlreadyWithdrawn' property of each hodl 
     function _getInterestAvailableToWithdraw(uint _hodlId) internal hodlExists(_hodlId) returns (uint) {
         uint _interestToWithdraw;
         uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
@@ -195,24 +187,24 @@ contract PonziHodlFactory is ERC721Full {
             uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
             _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
-            tierProperties[i].interestAlreadyWithdrawn = tierProperties[i].interestAlreadyWithdrawn.add(_interestToWithdrawFromThisTier); // <- new line
-
-            if (_hodlId ==1 ) {
-                // console.log("Tier is ",i);
-                console.log("_tierInterestAccrued is ",_tierInterestAccrued);
-                // console.log("_interestToWithdraw is", _interestToWithdraw);
-            }
         }
-        _interestToWithdraw = _interestToWithdraw.sub(hodlProperties[_hodlId].interestAlreadyWithdrawn);
+        uint _interestAlreadyWithdrawn = hodlProperties[_hodlId].interestAlreadyWithdrawn;
+        if (_interestAlreadyWithdrawn >= _interestToWithdraw) {
+            _interestToWithdraw = 0;
+        } else {
+            _interestToWithdraw = _interestToWithdraw.sub(hodlProperties[_hodlId].interestAlreadyWithdrawn);
+        }
         hodlProperties[_hodlId].interestAlreadyWithdrawn = hodlProperties[_hodlId].interestAlreadyWithdrawn.add(_interestToWithdraw); // <- new line
         return _interestToWithdraw;
     }
 
     function withdrawInterest(uint _hodlId) public {
         uint _interestToWithdraw = _getInterestAvailableToWithdraw(_hodlId);
-        totalInterestWithdrawn = totalInterestWithdrawn.add(_interestToWithdraw);
-        aToken.redeem(_interestToWithdraw);
-        underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
+        // console.log(_interestToWithdraw);
+        if (_interestToWithdraw > 0) {
+            aToken.redeem(_interestToWithdraw);
+            underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
+        }
     } 
 
     function destroyHodl(uint _hodlId) public {
