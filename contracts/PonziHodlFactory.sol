@@ -57,6 +57,7 @@ contract PonziHodlFactory is ERC721Full {
         uint purchaseTime;
         uint tier;
         string name;
+        uint interestAlreadyWithdrawn;
     }
 
     struct tier {
@@ -179,10 +180,12 @@ contract PonziHodlFactory is ERC721Full {
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
             _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
         }
+        _interestToWithdraw = _interestToWithdraw.sub(hodlProperties[_hodlId].interestAlreadyWithdrawn);
         return _interestToWithdraw;
     }
 
     // the same as the above, except that it updates 'interestAlreadyWithdrawn' property of each tier 
+    // and 'interestAlreadyWithdrawn' property of each hodl
     function _getInterestAvailableToWithdraw(uint _hodlId) internal hodlExists(_hodlId) returns (uint) {
         uint _interestToWithdraw;
         uint _playerCount = getPlayersMyTierOrBelow(_hodlId);
@@ -192,17 +195,20 @@ contract PonziHodlFactory is ERC721Full {
             uint _interestToWithdrawFromThisTier = _tierInterestAccrued.div(_playerCount);
             _interestToWithdraw = _interestToWithdraw.add(_interestToWithdrawFromThisTier);
             _playerCount = _playerCount.add(tierProperties[i].hodlsInTier);
-            tierProperties[i].interestAlreadyWithdrawn = tierProperties[i].interestAlreadyWithdrawn.add(_interestToWithdrawFromThisTier); // <- only new line from View version
+            tierProperties[i].interestAlreadyWithdrawn = tierProperties[i].interestAlreadyWithdrawn.add(_interestToWithdrawFromThisTier); // <- new line
 
-            console.log("Tier is ",i);
-            console.log("_tierInterestAccrued is ",_tierInterestAccrued);
-            console.log("_interestToWithdraw is", _interestToWithdraw);
-
+            if (_hodlId ==1 ) {
+                // console.log("Tier is ",i);
+                console.log("_tierInterestAccrued is ",_tierInterestAccrued);
+                // console.log("_interestToWithdraw is", _interestToWithdraw);
+            }
         }
+        _interestToWithdraw = _interestToWithdraw.sub(hodlProperties[_hodlId].interestAlreadyWithdrawn);
+        hodlProperties[_hodlId].interestAlreadyWithdrawn = hodlProperties[_hodlId].interestAlreadyWithdrawn.add(_interestToWithdraw); // <- new line
         return _interestToWithdraw;
     }
 
-    function _withdrawInterest(uint _hodlId) internal {
+    function withdrawInterest(uint _hodlId) public {
         uint _interestToWithdraw = _getInterestAvailableToWithdraw(_hodlId);
         totalInterestWithdrawn = totalInterestWithdrawn.add(_interestToWithdraw);
         aToken.redeem(_interestToWithdraw);
@@ -211,7 +217,7 @@ contract PonziHodlFactory is ERC721Full {
 
     function destroyHodl(uint _hodlId) public {
         require (ownerOf(_hodlId) == msg.sender, "Not owner");
-        _withdrawInterest(_hodlId);
+        withdrawInterest(_hodlId);
         // remove HODL from tier
         uint _tier = hodlProperties[_hodlId].tier;
         uint _hodlsInTier = tierProperties[_tier].hodlsInTier;

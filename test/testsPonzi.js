@@ -299,19 +299,35 @@ contract('PonziHodlFactoryTests', (accounts) => {
     await time.increase(time.duration.days(1));
     // now have 21 hodls, still 100 dai interest. 
     // check tier
+    // check individual interest
+    await hodlFactory.destroyHodl(0);
     var tierInterestShouldBe = (web3.utils.toWei('100', 'ether')/31)*11;
     var hodlInterestShouldBe = (tierInterestShouldBe/10);
     var totalReceiptShouldBe = hodlInterestShouldBe + 100000000000000000000;
-    // check individual interest
-    await hodlFactory.destroyHodl(0);
     var totalReceipt = await cash.balanceOf.call(user);
+    var interestReceipt = web3.utils.toWei('100', 'ether') - hodlInterestShouldBe;
     // console.log("tierInterestShouldBe",tierInterestShouldBe);
     // console.log("hodlInterestShouldBe",hodlInterestShouldBe);
     // console.log("total receipt", totalReceipt.toString());
     // console.log("total receipt should be", totalReceiptShouldBe);
     var difference = Math.abs(totalReceipt.toString() - totalReceiptShouldBe);
     assert.isBelow(difference/totalReceiptShouldBe,0.0001);
+    // destroy another hodl
+    await cash.resetBalance(user);
+    await hodlFactory.destroyHodl(1);
+    var interestReceipt = web3.utils.toWei('100', 'ether') - hodlInterestShouldBe;
+    var tierInterestShouldBe = ((web3.utils.toWei('100', 'ether')/29)*11) -  interestReceipt;
+    var hodlInterestShouldBe = (tierInterestShouldBe/9);
+    var totalReceiptShouldBe = hodlInterestShouldBe + 100000000000000000000;
+    var totalReceipt = await cash.balanceOf.call(user);
+    var difference = Math.abs(totalReceipt.toString() - totalReceiptShouldBe);
 
+    console.log("tierInterestShouldBe",tierInterestShouldBe);
+    // console.log("hodlInterestShouldBe",hodlInterestShouldBe);
+    console.log("total receipt", totalReceipt.toString());
+    // console.log("total receipt should be", totalReceiptShouldBe);
+
+    assert.isBelow(difference/totalReceiptShouldBe,0.0001);
 
   //   var difference = Math.abs(interestAvailable-interestAvailableShouldBe);
   //   assert.isBelow(difference/interestAvailable,0.0001);
