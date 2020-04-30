@@ -200,7 +200,6 @@ contract PonziHodlFactory is ERC721Full {
 
     function withdrawInterest(uint _hodlId) public {
         uint _interestToWithdraw = _getInterestAvailableToWithdraw(_hodlId);
-        // console.log(_interestToWithdraw);
         if (_interestToWithdraw > 0) {
             aToken.redeem(_interestToWithdraw);
             underlying.transfer(ownerOf(_hodlId), _interestToWithdraw);
@@ -234,15 +233,6 @@ contract PonziHodlFactory is ERC721Full {
         hodlCount = hodlCount.sub(1);
         _burn(_hodlId);
         hodlsDeletedTracker[msg.sender].push(_hodlId);
-    }
-
-    // transfer override needs work before mainnet
-    function transferFrom(address from, address to, uint256 tokenId) public {
-        //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
-        hodlsDeletedTracker[from].push(tokenId);
-        hodlOwnerTracker[to].push(tokenId);
-        _transferFrom(from, to, tokenId);
     }
 
 }

@@ -58,8 +58,6 @@ contract ClassicHodlFactory is ERC721Full {
     mapping (address => uint[]) hodlOwnerTracker;
     mapping (address => uint[]) hodlsDeletedTracker;
 
-    // event stfu(uint indexed stfu);
-
     function getHodlPurchaseTime(uint _hodlId) external view returns (uint) {
         return hodlProperties[_hodlId].purchaseTime;
     }
@@ -120,7 +118,7 @@ contract ClassicHodlFactory is ERC721Full {
 
     function destroyHodl(uint _hodlId) public {
         require (ownerOf(_hodlId) == msg.sender, "Not owner");
-        // require (hodlProperties[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
+        // require (hodlProperties[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour"); // removed for kovan
         withdrawInterest(_hodlId);
         // update averageTimeLastWithdrawn
         if (hodlCount > 1) {
@@ -135,15 +133,6 @@ contract ClassicHodlFactory is ERC721Full {
         hodlCount = hodlCount.sub(1);
         _burn(_hodlId);
         hodlsDeletedTracker[msg.sender].push(_hodlId);
-    }
-
-    // transfer override, needs work before mainnet
-    function transferFrom(address from, address to, uint256 tokenId) public {
-        //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
-        hodlsDeletedTracker[from].push(tokenId);
-        hodlOwnerTracker[to].push(tokenId);
-        _transferFrom(from, to, tokenId);
     }
 
 }

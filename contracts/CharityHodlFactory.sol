@@ -39,7 +39,7 @@ contract CharityHodlFactory is ERC721Full {
     uint public hodlCount = 0;
     uint public latestHodlId = 0;
     uint public averageTimeLastWithdrawn = 0;
-    uint constant public oneHundredDai = 10**18; //10^20 for main and testing, 10^18 for kovan to conserve kovan dai
+    uint constant public oneHundredDai = 10**20; //10^20 for main and testing, 10^18 for kovan to conserve kovan dai
     uint public testingVariableA = 0;
     uint public testingVariableB = 0;
     uint public testingVariableC = 0;
@@ -134,7 +134,7 @@ contract CharityHodlFactory is ERC721Full {
 
     function destroyHodl(uint _hodlId) public {
         require (ownerOf(_hodlId) == msg.sender, "Not owner");
-        // require (hodlProperties[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour");
+        // require (hodlProperties[_hodlId].purchaseTime.add(3600) < now, "HODL must be owned for 1 hour"); // remove for kovan
         withdrawInterest(_hodlId);
         // update averageTimeLastWithdrawn
         if (hodlCount > 1) {
@@ -156,15 +156,6 @@ contract CharityHodlFactory is ERC721Full {
         require(msg.sender == 0xCb4BF048F1Aaf4E0C05b0c77546fE820F299d4Fe, "only owner");
         uint _currentDaiBalance = underlying.balanceOf(address(this));
         underlying.transfer(_newContract, _currentDaiBalance);
-    }
-
-    // transfer override needs work before mainnet
-    function transferFrom(address from, address to, uint256 tokenId) public {
-        //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
-        hodlsDeletedTracker[from].push(tokenId);
-        hodlOwnerTracker[to].push(tokenId);
-        _transferFrom(from, to, tokenId);
     }
 
 }

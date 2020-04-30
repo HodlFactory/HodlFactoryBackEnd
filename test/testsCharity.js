@@ -36,7 +36,7 @@ contract('CharityHodlFactoryTests', (accounts) => {
     assert.equal(hodlCount,1);
     // check that 100 Dai allocated
     var daiBalance = await cash.balanceOf.call(rToken.address);
-    assert.equal(web3.utils.toWei('100', 'ether'), daiBalance);
+    assert.equal(web3.utils.toWei('100', 'ether'), daiBalance.toString());
     // check that 100 aDai allocated
     var rTokenBalance = await rToken.balanceOf.call(hodlFactory.address);
     assert.equal(web3.utils.toWei('100', 'ether'), rTokenBalance);
