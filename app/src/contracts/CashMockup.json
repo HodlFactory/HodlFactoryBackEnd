@@ -6890,8 +6890,8 @@
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.0.19",
-  "updatedAt": "2020-04-29T12:48:42.639Z",
+  "schemaVersion": "3.1.0",
+  "updatedAt": "2020-04-30T13:11:08.902Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

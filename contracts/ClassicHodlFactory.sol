@@ -137,4 +137,13 @@ contract ClassicHodlFactory is ERC721Full {
         hodlsDeletedTracker[msg.sender].push(_hodlId);
     }
 
+    // transfer override, needs work before mainnet
+    function transferFrom(address from, address to, uint256 tokenId) public {
+        //solhint-disable-next-line max-line-length
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
+        hodlsDeletedTracker[from].push(tokenId);
+        hodlOwnerTracker[to].push(tokenId);
+        _transferFrom(from, to, tokenId);
+    }
+
 }

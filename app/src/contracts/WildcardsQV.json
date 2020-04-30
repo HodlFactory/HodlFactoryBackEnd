@@ -15055,8 +15055,7 @@
             }
           ],
           "name": "LogFundsDistrubuted",
-          "type": "event",
-          "signature": "0x1534aa594bf2dad3f5f35ebe5b0eb1c8989b2c06c857d8aa0e4c67626cc28e2e"
+          "type": "event"
         },
         "0x31ea2ea4bc25a8b86f863a4033bdc12071a2187d8fa60426e2647a65ec129c9c": {
           "anonymous": false,
@@ -15069,8 +15068,7 @@
             }
           ],
           "name": "LogNewVotingInterval",
-          "type": "event",
-          "signature": "0x31ea2ea4bc25a8b86f863a4033bdc12071a2187d8fa60426e2647a65ec129c9c"
+          "type": "event"
         },
         "0xbb5cb4fe5f8ce229749057e580e6821bbc09458d69130d3abe80339773680869": {
           "anonymous": false,
@@ -15089,8 +15087,7 @@
             }
           ],
           "name": "LogProposalCreated",
-          "type": "event",
-          "signature": "0xbb5cb4fe5f8ce229749057e580e6821bbc09458d69130d3abe80339773680869"
+          "type": "event"
         },
         "0xdc13fcc6f63ec77dc403e7940f2785d0e61d9a27f697a1610a742f3a72c45fef": {
           "anonymous": false,
@@ -15109,8 +15106,7 @@
             }
           ],
           "name": "LogProposalStateChange",
-          "type": "event",
-          "signature": "0xdc13fcc6f63ec77dc403e7940f2785d0e61d9a27f697a1610a742f3a72c45fef"
+          "type": "event"
         },
         "0x8156901e268aea902371f0e4c4765356ce23f34d2c58a4052bf6835f6270e75a": {
           "anonymous": false,
@@ -15147,8 +15143,7 @@
             }
           ],
           "name": "LogVote",
-          "type": "event",
-          "signature": "0x8156901e268aea902371f0e4c4765356ce23f34d2c58a4052bf6835f6270e75a"
+          "type": "event"
         },
         "0x2a08c6cd4dd7d763b829e5460b9b8dd8c6dec87c26460cab4d34838740e2ad63": {
           "anonymous": false,
@@ -15191,8 +15186,7 @@
             }
           ],
           "name": "LogFundsDistributed",
-          "type": "event",
-          "signature": "0x2a08c6cd4dd7d763b829e5460b9b8dd8c6dec87c26460cab4d34838740e2ad63"
+          "type": "event"
         }
       },
       "links": {},
@@ -15200,8 +15194,8 @@
       "transactionHash": "0x59c5a8ea936ae0c7add5d25dfbfd333d12fbb3d4c3e75dc176d56ffc528cb016"
     }
   },
-  "schemaVersion": "3.0.19",
-  "updatedAt": "2020-04-29T12:48:42.706Z",
+  "schemaVersion": "3.1.0",
+  "updatedAt": "2020-04-30T13:11:08.962Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
