@@ -39,7 +39,7 @@ contract CharityHodlFactory is ERC721Full {
     uint public hodlCount = 0;
     uint public latestHodlId = 0;
     uint public averageTimeLastWithdrawn = 0;
-    uint constant public oneHundredDai = 10**20; //10^20 for main and testing, 10^18 for kovan to conserve kovan dai
+    uint constant public oneHundredDai = 10**18; //10^20 for main and testing, 10^18 for kovan to conserve kovan dai
     uint public testingVariableA = 0;
     uint public testingVariableB = 0;
     uint public testingVariableC = 0;
